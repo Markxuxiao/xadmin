@@ -1,0 +1,15 @@
+{
+  "name": "xadmin",
+  "version": "0.1.0",
+  "private": true,
+  "description": "XAdmin 通用后台管理系统框架",
+  "scripts": {
+    "dev": "pnpm -r --parallel dev",
+    "build": "pnpm -r build",
+    "test": "pnpm -r test"
+  },
+  "engines": {
+    "node": ">=18",
+    "pnpm": ">=8"
+  }
+}

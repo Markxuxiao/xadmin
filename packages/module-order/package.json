@@ -1,0 +1,9 @@
+{
+  "name": "@xadmin/module-order",
+  "version": "0.1.0",
+  "description": "XAdmin 订单模块",
+  "dependencies": {
+    "@xadmin/backend": "workspace:*",
+    "@xadmin/module-user": "workspace:*"
+  }
+}

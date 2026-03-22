@@ -1,0 +1,33 @@
+# XAdmin — 通用后台管理系统框架
+
+## 项目结构
+
+```
+packages/
+  core/           # 框架核心（@xadmin/core）
+    frontend/    # Vue3 前端核心
+    backend/     # NestJS 后端核心
+  module-user/   # 用户模块
+  module-order/  # 订单模块
+
+apps/
+  project-alpha/ # 示例项目 A
+```
+
+## 技术栈
+
+- **前端**: Vue 3 + Vite + Element Plus + Pinia + Vue Router
+- **后端**: NestJS + MikroORM
+- **工程**: pnpm Monorepo + Workspace
+
+## 核心设计原则
+
+1. **模块隔离**: Module Service 禁止调用其他 Module Service
+2. **跨模块查询**: 通过 EntityManager 查询，不跨 Service
+3. **显式注册**: 模块在 app 层显式 import，不使用 auto-discovery
+4. **组件复用**: Module 通过 `components/` 目录导出可复用组件
+
+## 相关文档
+
+- 设计文档: `~/.gstack/projects/xadmin-framework/xuxiao-unknown-design-20260322-153000.md`
+- Test Plan: `~/.gstack/projects/xadmin-framework/xuxiao-unknown-test-plan-20260322-165500.md`

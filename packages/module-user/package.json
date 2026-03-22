@@ -1,0 +1,8 @@
+{
+  "name": "@xadmin/module-user",
+  "version": "0.1.0",
+  "description": "XAdmin 用户模块",
+  "dependencies": {
+    "@xadmin/backend": "workspace:*"
+  }
+}

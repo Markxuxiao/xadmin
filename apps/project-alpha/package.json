@@ -1,0 +1,11 @@
+{
+  "name": "@xadmin/project-alpha",
+  "version": "0.1.0",
+  "description": "XAdmin 项目示例 A",
+  "dependencies": {
+    "@xadmin/core": "workspace:*",
+    "@xadmin/module-user": "workspace:*",
+    "@xadmin/module-order": "workspace:*",
+    "vue": "^3.4.0"
+  }
+}
