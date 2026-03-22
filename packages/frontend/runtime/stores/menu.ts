@@ -1,14 +1,8 @@
 // 菜单状态管理
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-
-export interface MenuItem {
-  path: string
-  title: string
-  icon?: string
-  children?: MenuItem[]
-  meta?: { permission?: string }
-}
+import type { MenuItem } from '../types'
+export type { MenuItem } from '../types'
 
 export const useMenuStore = defineStore('xadmin-menu', () => {
   const menus = ref<MenuItem[]>([])

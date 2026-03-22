@@ -1,7 +1,7 @@
 // 动态路由状态管理
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { MenuItem } from './menu'
+import type { MenuItem, TabItem } from '../types'
 import type { RouteRecordRaw } from 'vue-router'
 
 // 注入的 viewsMap（来自 plugin.ts）
@@ -10,12 +10,7 @@ declare global {
     viewsMap?: Record<string, () => Promise<any>>
   }
 }
-
-export interface TabItem {
-  path: string
-  title: string
-  closable?: boolean
-}
+export type { TabItem } from '../types'
 
 export const useRouterStore = defineStore('xadmin-router', () => {
   const tabs = ref<TabItem[]>([
@@ -25,6 +20,8 @@ export const useRouterStore = defineStore('xadmin-router', () => {
   const activeTab = ref('/dashboard')
 
   // 从后端菜单生成路由
+  // NOTE: This is used in Phase 2 when backend provides real menu data.
+  // Currently dead code in Phase 1 (mock stores use static routes).
   function generateRoutes(menus: MenuItem[], viewsMap: Record<string, () => Promise<any>>): RouteRecordRaw[] {
     const routes: RouteRecordRaw[] = []
 

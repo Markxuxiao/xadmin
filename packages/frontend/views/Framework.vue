@@ -90,8 +90,30 @@
             :label="tab.title"
             :name="tab.path"
             :closable="tab.closable !== false"
+            @contextmenu="handleTabContextMenu($event, tab)"
           />
         </el-tabs>
+
+        <!-- Tab Context Menu -->
+        <el-dropdown
+          ref="tabContextMenuRef"
+          trigger="manual"
+          placement="bottom-start"
+          :visible="contextMenuVisible"
+          @command="handleContextMenuCommand"
+        >
+          <div
+            v-show="false"
+            style="position: fixed; left: -9999px;"
+          />
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item command="closeCurrent">关闭当前</el-dropdown-item>
+              <el-dropdown-item command="closeOther">关闭其他</el-dropdown-item>
+              <el-dropdown-item command="closeAll">关闭所有</el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
       </div>
 
       <!-- 内容区 -->
@@ -104,13 +126,13 @@
       </main>
     </div>
 
-    <!-- Mobile Drawer -->
+    <!-- Mobile Drawer — only in DOM on mobile -->
     <el-drawer
+      v-if="isMobile"
       v-model="mobileDrawerVisible"
       direction="ltr"
       :show-close="false"
       size="220px"
-      class="mobile-drawer"
     >
       <div class="drawer-logo">XAdmin</div>
       <el-menu
@@ -149,8 +171,32 @@ const routerStore = useRouterStore()
 
 const isDark = ref(false)
 const mobileDrawerVisible = ref(false)
+const contextMenuVisible = ref(false)
+const contextMenuTarget = ref<string | null>(null)
+const tabContextMenuRef = ref()
+
+// Mobile detection — only show drawer on screens < 768px
+const isMobile = ref(window.matchMedia('(max-width: 767px)').matches)
+onMounted(() => {
+  const mq = window.matchMedia('(max-width: 767px)')
+  mq.addEventListener('change', (e) => { isMobile.value = e.matches })
+})
 
 const activeMenu = computed(() => route.path)
+
+// O(1) menu path lookup — built once, not searched on every navigation
+const menuPathMap = computed(() => {
+  const map = new Map<string, string>()
+  for (const item of menuStore.menus) {
+    map.set(item.path, item.title)
+    if (item.children) {
+      for (const child of item.children) {
+        map.set(child.path, child.title)
+      }
+    }
+  }
+  return map
+})
 
 onMounted(() => {
   menuStore.initCollapsedState()
@@ -174,14 +220,7 @@ function handleTabEdit(targetPath: string, action: 'remove' | 'add') {
 }
 
 function getMenuTitle(path: string): string {
-  for (const item of menuStore.menus) {
-    if (item.path === path) return item.title
-    if (item.children) {
-      const child = item.children.find(c => c.path === path)
-      if (child) return child.title
-    }
-  }
-  return path
+  return menuPathMap.value.get(path) ?? path
 }
 
 function handleUserCommand(command: string) {
@@ -196,6 +235,44 @@ function handleUserCommand(command: string) {
 function toggleDark() {
   isDark.value = !isDark.value
   document.documentElement.classList.toggle('dark', isDark.value)
+}
+
+function handleTabContextMenu(event: MouseEvent, tab: { path: string; closable?: boolean }) {
+  if (tab.closable === false) return // Can't close home tab
+  event.preventDefault()
+  contextMenuTarget.value = tab.path
+  contextMenuVisible.value = true
+  // Position the dropdown at cursor
+  const menu = document.querySelector('.tabs .el-dropdown') as HTMLElement
+  if (menu) {
+    menu.style.left = `${event.clientX}px`
+    menu.style.top = `${event.clientY}px`
+    menu.style.position = 'fixed'
+  }
+  // Close on click outside
+  const closeMenu = () => {
+    contextMenuVisible.value = false
+    document.removeEventListener('click', closeMenu)
+  }
+  setTimeout(() => document.addEventListener('click', closeMenu), 0)
+}
+
+function handleContextMenuCommand(command: string) {
+  const target = contextMenuTarget.value
+  contextMenuVisible.value = false
+  if (!target) return
+
+  switch (command) {
+    case 'closeCurrent':
+      routerStore.removeTab(target)
+      break
+    case 'closeOther':
+      routerStore.closeOtherTabs(target)
+      break
+    case 'closeAll':
+      routerStore.closeAllTabs()
+      break
+  }
 }
 </script>
 
@@ -347,10 +424,6 @@ function toggleDark() {
 }
 
 /* Mobile Drawer */
-.mobile-drawer {
-  display: none;
-}
-
 .drawer-logo {
   height: 56px;
   display: flex;
