@@ -30,21 +30,12 @@ importers:
       '@element-plus/icons-vue':
         specifier: ^2.3.0
         version: 2.3.2(vue@3.5.30(typescript@5.9.3))
-      '@mikro-orm/core':
-        specifier: ^6.6.9
-        version: 6.6.9
-      '@mikro-orm/nestjs':
-        specifier: ^6.1.2
-        version: 6.1.2(@mikro-orm/core@6.6.9)(@nestjs/common@10.4.22(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@10.4.22)
-      '@mikro-orm/sqlite':
-        specifier: ^6.6.9
-        version: 6.6.9(@mikro-orm/core@6.6.9)(better-sqlite3@12.8.0)(pg@8.19.0)
       '@types/better-sqlite3':
         specifier: ^7.6.13
         version: 7.6.13
       '@xadmin/frontend':
         specifier: workspace:*
-        version: link:../../packages/frontend
+        version: link:../../packages/core/frontend
       '@xadmin/module-order':
         specifier: workspace:*
         version: link:../../packages/module-order
@@ -80,7 +71,7 @@ importers:
         specifier: ^8.0.0
         version: 8.0.1(@types/node@25.5.0)
 
-  packages/backend:
+  packages/core/backend:
     dependencies:
       '@mikro-orm/core':
         specifier: ^6.6.9
@@ -126,7 +117,7 @@ importers:
         specifier: ^7.6.13
         version: 7.6.13
 
-  packages/frontend:
+  packages/core/frontend:
     dependencies:
       '@element-plus/icons-vue':
         specifier: ^2.3.0
@@ -158,7 +149,7 @@ importers:
     dependencies:
       '@xadmin/backend':
         specifier: workspace:*
-        version: link:../backend
+        version: link:../core/backend
       '@xadmin/module-user':
         specifier: workspace:*
         version: link:../module-user
@@ -167,7 +158,7 @@ importers:
     dependencies:
       '@xadmin/backend':
         specifier: workspace:*
-        version: link:../backend
+        version: link:../core/backend
 
 packages:
 

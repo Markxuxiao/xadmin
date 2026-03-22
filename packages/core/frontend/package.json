@@ -1,0 +1,19 @@
+{
+  "name": "@xadmin/frontend",
+  "version": "0.1.0",
+  "description": "XAdmin 前端核心",
+  "main": "runtime/plugin.ts",
+  "type": "module",
+  "dependencies": {
+    "vue": "^3.4.0",
+    "vue-router": "^4.3.0",
+    "pinia": "^2.1.0",
+    "element-plus": "^2.6.0",
+    "@element-plus/icons-vue": "^2.3.0",
+    "axios": "^1.6.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.0",
+    "vite": "^8.0.0"
+  }
+}

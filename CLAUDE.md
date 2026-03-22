@@ -4,13 +4,16 @@
 
 ```
 packages/
-  frontend/       # @xadmin/frontend — Vue3 前端核心
-  backend/        # @xadmin/backend — NestJS 后端核心
+  core/
+    frontend/     # @xadmin/frontend — Vue3 前端核心
+    backend/      # @xadmin/backend — NestJS 后端核心
   module-user/    # 用户模块
   module-order/   # 订单模块
 
 apps/
   project-alpha/  # 示例项目 A
+    backend/      # NestJS 应用入口 (独立数据库)
+    src/         # Vue 应用入口
 ```
 
 ## 技术栈
