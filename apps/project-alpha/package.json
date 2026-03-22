@@ -7,15 +7,17 @@
     "build": "vite build"
   },
   "dependencies": {
-    "@xadmin/frontend": "workspace:*",
-    "@xadmin/module-user": "workspace:*",
-    "@xadmin/module-order": "workspace:*",
-    "vue": "^3.4.0",
-    "vue-router": "^4.3.0",
-    "pinia": "^2.1.0",
-    "element-plus": "^2.6.0",
     "@element-plus/icons-vue": "^2.3.0",
-    "axios": "^1.6.0"
+    "@types/better-sqlite3": "^7.6.13",
+    "@xadmin/frontend": "workspace:*",
+    "@xadmin/module-order": "workspace:*",
+    "@xadmin/module-user": "workspace:*",
+    "axios": "^1.6.0",
+    "better-sqlite3": "^12.8.0",
+    "element-plus": "^2.6.0",
+    "pinia": "^2.1.0",
+    "vue": "^3.4.0",
+    "vue-router": "^4.3.0"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^6.0.0",

@@ -11,19 +11,24 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('login')
-  login(@Body() dto: LoginDto) {
-    const user = this.authService.validateUser(dto.username, dto.password)
+  async login(@Body() dto: LoginDto) {
+    const user = await this.authService.validateUser(dto.username, dto.password)
     if (!user) {
       throw new UnauthorizedException('用户名或密码错误')
     }
-    const { password: _, ...userWithoutPassword } = user
-    const token = this.authService.generateToken(userWithoutPassword)
+    const { token, expiresAt } = this.authService.generateToken(user)
     return {
       success: true,
       data: {
         token,
-        expiresAt: Date.now() + 15 * 60 * 1000,
-        user: userWithoutPassword,
+        expiresAt,
+        user: {
+          id: user.id,
+          username: user.username,
+          nickname: user.nickname,
+          permissions: typeof user.permissions === 'string' ? JSON.parse(user.permissions) : user.permissions,
+          roles: typeof user.roles === 'string' ? JSON.parse(user.roles) : user.roles,
+        },
       },
     }
   }
