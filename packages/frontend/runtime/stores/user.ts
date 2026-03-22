@@ -4,28 +4,17 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import type { UserInfo, LoginResult, TokenInfo } from '../types'
 import { isTokenExpired } from '../types'
+import { login as loginApi } from '../api/auth'
+import { getCurrentUser } from '../api/user'
 export type { UserInfo, LoginResult } from '../types'
 
 const STORAGE_KEY_TOKEN = 'xadmin_token'
-
-// Mock token expiry: 15 minutes from login (matches design doc for real JWT)
-const MOCK_TOKEN_TTL_MS = 15 * 60 * 1000
 
 function getStoredToken(): TokenInfo | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY_TOKEN)
     if (!raw) return null
-    // For Phase 1: stored as JSON { accessToken, expiresAt }
-    // For compatibility, also accept raw string (old mock format)
-    try {
-      return JSON.parse(raw) as TokenInfo
-    } catch {
-      // Legacy: raw string token — create mock TokenInfo
-      return {
-        accessToken: raw,
-        expiresAt: Date.now() + MOCK_TOKEN_TTL_MS
-      }
-    }
+    return JSON.parse(raw) as TokenInfo
   } catch {
     console.warn('[XAdmin] Failed to read token from localStorage')
     return null
@@ -58,33 +47,23 @@ export const useUserStore = defineStore('xadmin-user', () => {
   // Access token for API calls
   const token = computed(() => tokenInfo.value?.accessToken ?? null)
 
-  // Mock 登录
+  // 登录 — 调用后端 POST /api/auth/login
   async function login(username: string, password: string): Promise<LoginResult> {
-    // TODO: 调用后端 API
-    // 暂时用 mock 数据
     try {
-      if (username === 'admin' && password === 'admin') {
-        const mockUser: UserInfo = {
-          id: '1',
-          username: 'admin',
-          nickname: '管理员',
-          permissions: ['user:list', 'user:create', 'user:edit', 'user:delete'],
-          roles: ['admin']
-        }
-        const newToken: TokenInfo = {
-          accessToken: 'mock-jwt-token',
-          expiresAt: Date.now() + MOCK_TOKEN_TTL_MS,
-          refreshToken: 'mock-refresh-token'
-        }
+      const res = await loginApi({ username, password })
+      if (res.success) {
+        const { token: accessToken, expiresAt, user: userData } = res.data
+        const newToken: TokenInfo = { accessToken, expiresAt }
         tokenInfo.value = newToken
-        userInfo.value = mockUser
+        userInfo.value = userData
         setStoredToken(newToken)
         return { success: true }
       }
-      return { success: false, message: '用户名或密码错误' }
-    } catch (e) {
+      return { success: false, message: res.message ?? '登录失败' }
+    } catch (e: any) {
       console.error('[XAdmin] Login error:', e)
-      return { success: false, message: '登录失败，请稍后重试' }
+      const message = e?.response?.data?.message ?? e?.message ?? '登录失败，请稍后重试'
+      return { success: false, message }
     }
   }
 
@@ -94,24 +73,20 @@ export const useUserStore = defineStore('xadmin-user', () => {
     removeStoredToken()
   }
 
-  // 模拟获取用户信息
+  // 获取用户信息 — 调用后端 GET /api/user/me
   async function fetchUserInfo(): Promise<UserInfo | null> {
     if (!tokenInfo.value) return null
     if (isTokenExpired(tokenInfo.value)) {
-      // Token expired — clear and redirect to login
       logout()
       return null
     }
     try {
-      // TODO: 调用后端 /auth/me
-      userInfo.value = {
-        id: '1',
-        username: 'admin',
-        nickname: '管理员',
-        permissions: ['user:list', 'user:create', 'user:edit', 'user:delete'],
-        roles: ['admin']
+      const res = await getCurrentUser()
+      if (res.success) {
+        userInfo.value = res.data
+        return res.data
       }
-      return userInfo.value
+      return null
     } catch (e) {
       console.error('[XAdmin] fetchUserInfo error:', e)
       return null

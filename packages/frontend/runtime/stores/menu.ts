@@ -2,39 +2,23 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import type { MenuItem } from '../types'
+import { getMenuTree } from '../api/menu'
 export type { MenuItem } from '../types'
 
 export const useMenuStore = defineStore('xadmin-menu', () => {
   const menus = ref<MenuItem[]>([])
   const collapsed = ref(false)
 
-  // Mock 菜单数据
+  // 从后端获取菜单数据 — 调用 GET /api/menu/tree
   async function fetchMenus() {
-    // TODO: 调用后端 GET /menu/tree
-    menus.value = [
-      {
-        path: '/dashboard',
-        title: '首页',
-        icon: 'HomeFilled'
-      },
-      {
-        path: '/system',
-        title: '系统管理',
-        icon: 'Setting',
-        children: [
-          { path: '/system/user', title: '用户管理', icon: 'User', meta: { permission: 'user:list' } },
-          { path: '/system/role', title: '角色管理', icon: 'UserFilled', meta: { permission: 'role:list' } }
-        ]
-      },
-      {
-        path: '/order',
-        title: '订单管理',
-        icon: 'Document',
-        children: [
-          { path: '/order/list', title: '订单列表', meta: { permission: 'order:list' } }
-        ]
+    try {
+      const res = await getMenuTree()
+      if (res.success) {
+        menus.value = res.data
       }
-    ]
+    } catch (e) {
+      console.error('[XAdmin] fetchMenus error:', e)
+    }
   }
 
   function toggleCollapsed() {
