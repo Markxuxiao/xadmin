@@ -15,7 +15,7 @@ apps/
 
 ## 技术栈
 
-- **前端**: Vue 3 + Vite + Element Plus + Pinia + Vue Router
+- **前端**: Vue 3 + Vite 8 + Element Plus + Pinia + Vue Router
 - **后端**: NestJS + MikroORM
 - **工程**: pnpm Monorepo + Workspace
 
