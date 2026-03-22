@@ -55,7 +55,7 @@
           </el-form-item>
 
           <div class="login-footer">
-            <el-link type="info" :underline="false">忘记密码？</el-link>
+            <el-link type="info" underline="never">忘记密码？</el-link>
           </div>
         </el-form>
       </div>
