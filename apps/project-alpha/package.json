@@ -2,10 +2,23 @@
   "name": "@xadmin/project-alpha",
   "version": "0.1.0",
   "description": "XAdmin 项目示例 A",
+  "scripts": {
+    "dev": "vite"
+  },
   "dependencies": {
-    "@xadmin/core": "workspace:*",
+    "@xadmin/frontend": "workspace:*",
     "@xadmin/module-user": "workspace:*",
     "@xadmin/module-order": "workspace:*",
-    "vue": "^3.4.0"
+    "vue": "^3.4.0",
+    "vue-router": "^4.3.0",
+    "pinia": "^2.1.0",
+    "element-plus": "^2.6.0",
+    "@element-plus/icons-vue": "^2.3.0",
+    "axios": "^1.6.0"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0",
+    "@vitejs/plugin-vue": "^5.0.0",
+    "typescript": "^5.3.0"
   }
 }

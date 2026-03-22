@@ -1,16 +1,14 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import { resolve } from 'path'
-import { createXAdmin } from '@xadmin/frontend/runtime/plugin'
+import { resolve, dirname } from 'path'
+import { fileURLToPath } from 'url'
+
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
 export default defineConfig({
   plugins: [
-    vue(),
-    createXAdmin({
-      frontend: {
-        moduleGlob: '/packages/module-*/views/**/*.vue'
-      }
-    })
+    vue()
+    // XAdmin plugin: 已移除，Phase 1 直接 import 视图
   ],
   resolve: {
     alias: {
@@ -19,6 +17,6 @@ export default defineConfig({
   },
   server: {
     port: 3000,
-    open: true
+    open: false
   }
 })

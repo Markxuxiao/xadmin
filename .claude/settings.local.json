@@ -3,7 +3,11 @@
     "allow": [
       "Bash(git init:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(pnpm install:*)",
+      "Bash(mv packages/core/frontend/* packages/frontend/)",
+      "Bash(mv packages/core/backend/* packages/backend/)",
+      "Bash(pnpm view:*)"
     ]
   }
 }
