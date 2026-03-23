@@ -33,8 +33,16 @@ export class RoleController {
     if (existing) {
       return { success: false, message: '角色代码已存在' }
     }
-    const role = await this.roleService.create(data)
-    return { success: true, data: role }
+    try {
+      const role = await this.roleService.create(data)
+      return { success: true, data: role }
+    } catch (err: any) {
+      // Handle UNIQUE constraint violation from concurrent requests
+      if (err.message?.includes('UNIQUE') || err.code === 'SQLITE_CONSTRAINT') {
+        return { success: false, message: '角色代码已存在' }
+      }
+      throw err
+    }
   }
 
   @Put(':id')

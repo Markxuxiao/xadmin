@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.3] - 2026-03-23
+
+### Added
+- **Role management UI**: `RoleList.vue` with table, search/pagination, create/edit dialog, and permission checkbox group
+- **Role management API**: `GET/POST/PUT/DELETE /role` endpoints with JWT auth + admin role guard on write operations
+- **Role entity**: SQLite `roles` table (id, name, code, description, permissions, enabled) seeded with default admin/user roles
+
+### Fixed
+- Race condition in role creation: concurrent POST requests with same code now return a clean error instead of unhandled 500
+
 ## [0.1.2] - 2026-03-23
 
 ### Security
