@@ -1,8 +1,8 @@
 import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards } from '@nestjs/common'
 import { RoleService } from './role.service'
 import { AuthGuard } from '../user/auth.guard'
-import { RolesGuard } from '../shared/roles/roles.guard'
-import { Roles } from '../shared/roles/roles.decorator'
+import { RolesGuard } from '../../base/guards/roles.guard'
+import { Roles } from '../../base/guards/roles.decorator'
 
 @Controller('role')
 @UseGuards(AuthGuard)

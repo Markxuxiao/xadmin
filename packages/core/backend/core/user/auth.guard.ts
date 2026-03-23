@@ -1,5 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common'
-import { CanActivate, ExecutionContext } from '@nestjs/common'
+import { Injectable, UnauthorizedException, CanActivate, ExecutionContext } from '@nestjs/common'
 import { UserService } from './user.service'
 
 @Injectable()

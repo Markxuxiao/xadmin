@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import * as crypto from 'crypto'
 import * as bcrypt from 'bcrypt'
-import { getDb, rowToUser, UserRow } from '../entities'
+import { getDb, rowToUser, UserRow } from '../../base'
 
 const JWT_SECRET = process.env.JWT_SECRET ?? 'xadmin-dev-secret-2026'
 

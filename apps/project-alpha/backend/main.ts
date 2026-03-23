@@ -1,7 +1,7 @@
 import 'reflect-metadata'
 import { NestFactory } from '@nestjs/core'
 import { AppModule } from './app.module'
-import { getDb } from './entities'
+import { getDb } from '../../../packages/core/backend'
 
 async function bootstrap() {
   // Initialize database (creates tables and seeds data)

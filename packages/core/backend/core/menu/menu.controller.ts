@@ -1,5 +1,5 @@
-import { Controller, Get, Req, UnauthorizedException } from '@nestjs/common'
-import { AppService } from '../app.service'
+import { Controller, Get, Req } from '@nestjs/common'
+import { AppService } from '../shared/app.service'
 
 @Controller('menu')
 export class MenuController {

@@ -14,8 +14,13 @@
     "emitDecoratorMetadata": true,
     "outDir": "./dist",
     "rootDir": ".",
-    "noEmit": false
+    "noEmit": false,
+    "baseUrl": ".",
+    "paths": {
+      "@xadmin/backend": ["../../packages/core/backend"],
+      "@xadmin/backend/*": ["../../packages/core/backend/*"]
+    }
   },
-  "include": ["./**/*.ts"],
+  "include": ["./**/*.ts", "../../packages/core/backend/**/*.ts"],
   "exclude": ["node_modules", "dist"]
 }

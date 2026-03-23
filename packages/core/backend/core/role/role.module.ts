@@ -3,10 +3,13 @@ import { RoleController } from './role.controller'
 import { RoleService } from './role.service'
 import { UserModule } from '../user/user.module'
 
+// Reflector is global in NestJS but needs to be explicitly available for DI
+import { Reflector } from '@nestjs/core'
+
 @Module({
   imports: [UserModule],
   controllers: [RoleController],
-  providers: [RoleService],
+  providers: [RoleService, Reflector],
   exports: [RoleService],
 })
 export class RoleModule {}

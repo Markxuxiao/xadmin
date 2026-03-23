@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common'
 import * as crypto from 'crypto'
-import { getRoleDb, rowToRole, RoleRow } from '../entities/role.entity'
+import { getDb, rowToRole, RoleRow } from '../../base'
 
 @Injectable()
 export class RoleService {
-  private db = getRoleDb()
+  private db = getDb()
 
   findAll() {
     const rows = this.db.prepare('SELECT * FROM roles ORDER BY created_at DESC').all() as RoleRow[]
