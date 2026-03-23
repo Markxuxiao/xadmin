@@ -159,6 +159,9 @@ importers:
       '@xadmin/backend':
         specifier: workspace:*
         version: link:../core/backend
+      '@xadmin/frontend':
+        specifier: workspace:*
+        version: link:../core/frontend
 
 packages:
 
