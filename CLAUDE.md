@@ -19,7 +19,7 @@ apps/
 ## 技术栈
 
 - **前端**: Vue 3 + Vite 8 + Element Plus + Pinia + Vue Router
-- **后端**: NestJS + MikroORM
+- **后端**: NestJS + better-sqlite3 (SQLite)
 - **工程**: pnpm Monorepo + Workspace
 
 ## 核心设计原则
