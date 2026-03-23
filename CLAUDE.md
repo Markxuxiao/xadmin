@@ -33,3 +33,15 @@ apps/
 
 - 设计文档: `~/.gstack/projects/xadmin-framework/xuxiao-unknown-design-20260322-153000.md`
 - Test Plan: `~/.gstack/projects/xadmin-framework/xuxiao-unknown-test-plan-20260322-165500.md`
+
+## Testing
+
+- **Framework**: Vitest + @vue/test-utils + happy-dom
+- **Run**: `cd apps/project-alpha && pnpm test`
+- **Doc**: See `TESTING.md` for conventions and expectations
+- **Goal**: 100% coverage for new code
+  - When writing a new function, write a corresponding test
+  - When fixing a bug, write a regression test
+  - When adding error handling, write a test that triggers the error
+  - When adding a conditional (if/else, switch), write tests for BOTH paths
+  - Never commit code that makes existing tests fail
