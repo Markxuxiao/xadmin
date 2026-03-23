@@ -1,23 +1,11 @@
 // Axios API client with JWT interceptor
 import axios from 'axios'
-
-const STORAGE_KEY_TOKEN = 'xadmin_token'
+import { useUserStore } from '../stores/user'
 
 export interface ApiResponse<T = any> {
   success: boolean
   data: T
   message?: string
-}
-
-function getStoredToken(): string | null {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY_TOKEN)
-    if (!raw) return null
-    const parsed = JSON.parse(raw)
-    return parsed?.accessToken ?? null
-  } catch {
-    return null
-  }
 }
 
 const client = axios.create({
@@ -28,10 +16,11 @@ const client = axios.create({
   }
 })
 
-// Request interceptor: attach JWT token
+// Request interceptor: attach JWT token from Pinia store (single source of truth)
 client.interceptors.request.use(
   (config) => {
-    const token = getStoredToken()
+    const userStore = useUserStore()
+    const token = userStore.token
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
@@ -40,13 +29,13 @@ client.interceptors.request.use(
   (error) => Promise.reject(error)
 )
 
-// Response interceptor: handle 401 by clearing token
+// Response interceptor: handle 401 by logging out
 client.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem(STORAGE_KEY_TOKEN)
-      // Optionally redirect to login
+      const userStore = useUserStore()
+      userStore.logout()
       if (typeof window !== 'undefined') {
         window.location.href = '/login'
       }
