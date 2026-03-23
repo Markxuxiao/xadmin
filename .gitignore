@@ -5,3 +5,6 @@ dist/
 .DS_Store
 coverage/
 .gstack/
+*.db
+*.db-shm
+*.db-wal
