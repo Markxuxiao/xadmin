@@ -15,6 +15,11 @@ export class UserController {
     return { success: true, data: users }
   }
 
+  @Get('me')
+  async getCurrentUser(@Req() req: any) {
+    return { success: true, data: req.user }
+  }
+
   @Get(':id')
   async findOne(@Param('id') id: string) {
     const user = this.userService.findOne(id)
@@ -49,10 +54,5 @@ export class UserController {
   async delete(@Param('id') id: string) {
     const deleted = this.userService.delete(id)
     return { success: deleted }
-  }
-
-  @Get('me')
-  async getCurrentUser(@Req() req: any) {
-    return { success: true, data: req.user }
   }
 }
