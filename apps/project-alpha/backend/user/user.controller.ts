@@ -1,7 +1,11 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, Req, UnauthorizedException } from '@nestjs/common'
+import { Controller, Get, Post, Put, Delete, Body, Param, Req, UseGuards } from '@nestjs/common'
 import { UserService } from './user.service'
+import { AuthGuard } from './auth.guard'
+import { RolesGuard } from '../shared/roles/roles.guard'
+import { Roles } from '../shared/roles/roles.decorator'
 
 @Controller('user')
+@UseGuards(AuthGuard)
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
@@ -21,14 +25,18 @@ export class UserController {
   }
 
   @Post()
+  @UseGuards(RolesGuard)
+  @Roles('admin')
   async create(@Body() data: any) {
-    const user = this.userService.create(data)
+    const user = await this.userService.create(data)
     return { success: true, data: user }
   }
 
   @Put(':id')
+  @UseGuards(RolesGuard)
+  @Roles('admin')
   async update(@Param('id') id: string, @Body() data: any) {
-    const user = this.userService.update(id, data)
+    const user = await this.userService.update(id, data)
     if (!user) {
       return { success: false, message: '用户不存在' }
     }
@@ -36,6 +44,8 @@ export class UserController {
   }
 
   @Delete(':id')
+  @UseGuards(RolesGuard)
+  @Roles('admin')
   async delete(@Param('id') id: string) {
     const deleted = this.userService.delete(id)
     return { success: deleted }
@@ -43,15 +53,6 @@ export class UserController {
 
   @Get('me')
   async getCurrentUser(@Req() req: any) {
-    const authHeader = req.headers['authorization']
-    if (!authHeader?.startsWith('Bearer ')) {
-      throw new UnauthorizedException('Missing token')
-    }
-    const token = authHeader.slice(7)
-    const user = this.userService.getCurrentUser(token)
-    if (!user) {
-      throw new UnauthorizedException('Invalid or expired token')
-    }
-    return { success: true, data: user }
+    return { success: true, data: req.user }
   }
 }

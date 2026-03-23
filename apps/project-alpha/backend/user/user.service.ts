@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common'
 import * as crypto from 'crypto'
+import * as bcrypt from 'bcrypt'
 import { getDb, rowToUser, UserRow } from '../entities'
 
-const JWT_SECRET = 'xadmin-dev-secret-2026'
+const JWT_SECRET = process.env.JWT_SECRET ?? 'xadmin-dev-secret-2026'
 
 export interface TokenPayload {
   sub: string
@@ -17,6 +18,16 @@ export interface TokenPayload {
 @Injectable()
 export class UserService {
   private db = getDb()
+
+  // Hash a password using bcrypt
+  async hashPassword(password: string): Promise<string> {
+    return bcrypt.hash(password, 10)
+  }
+
+  // Verify a password against a bcrypt hash
+  async verifyPassword(password: string, hash: string): Promise<boolean> {
+    return bcrypt.compare(password, hash)
+  }
 
   // Verify JWT token
   verifyToken(token: string): TokenPayload | null {
@@ -46,10 +57,11 @@ export class UserService {
   }
 
   // Authenticate user with username/password
-  authenticate(username: string, password: string): UserRow | null {
+  async authenticate(username: string, password: string): Promise<UserRow | null> {
     const row = this.db.prepare('SELECT * FROM users WHERE username = ? AND enabled = 1').get(username) as UserRow | undefined
     if (!row) return null
-    if (row.password !== password) return null
+    const valid = await this.verifyPassword(password, row.password)
+    if (!valid) return null
     return row
   }
 
@@ -86,24 +98,28 @@ export class UserService {
     return row ? rowToUser(row) : null
   }
 
-  create(data: { username: string; password: string; nickname: string; roles?: string[]; permissions?: string[] }) {
-    const id = Date.now().toString()
+  async create(data: { username: string; password: string; nickname: string; roles?: string[]; permissions?: string[] }) {
+    const id = crypto.randomUUID()
     const now = new Date().toISOString()
+    const hashedPassword = await this.hashPassword(data.password)
     this.db.prepare(`
       INSERT INTO users (id, username, password, nickname, roles, permissions, created_at, updated_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(id, data.username, data.password, data.nickname, JSON.stringify(data.roles ?? []), JSON.stringify(data.permissions ?? []), now, now)
+    `).run(id, data.username, hashedPassword, data.nickname, JSON.stringify(data.roles ?? []), JSON.stringify(data.permissions ?? []), now, now)
     return this.findOne(id)
   }
 
-  update(id: string, data: Partial<{ password: string; nickname: string; roles: string[]; permissions: string[]; enabled: boolean }>) {
+  async update(id: string, data: Partial<{ password: string; nickname: string; roles: string[]; permissions: string[]; enabled: boolean }>) {
     const existing = this.db.prepare('SELECT * FROM users WHERE id = ?').get(id) as UserRow | undefined
     if (!existing) return null
 
     const updates: string[] = []
     const values: any[] = []
 
-    if (data.password !== undefined) { updates.push('password = ?'); values.push(data.password) }
+    if (data.password !== undefined) {
+      updates.push('password = ?')
+      values.push(await this.hashPassword(data.password))
+    }
     if (data.nickname !== undefined) { updates.push('nickname = ?'); values.push(data.nickname) }
     if (data.roles !== undefined) { updates.push('roles = ?'); values.push(JSON.stringify(data.roles)) }
     if (data.permissions !== undefined) { updates.push('permissions = ?'); values.push(JSON.stringify(data.permissions)) }

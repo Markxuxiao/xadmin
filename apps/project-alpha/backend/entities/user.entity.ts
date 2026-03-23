@@ -1,11 +1,15 @@
 import Database from 'better-sqlite3'
-import { join } from 'path'
+import { join, dirname } from 'path'
+import { fileURLToPath } from 'url'
+
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
 let _db: Database.Database | null = null
 
 export function getDb(): Database.Database {
   if (!_db) {
-    const dbPath = join(process.cwd(), 'xadmin.db')
+    // Use __dirname-relative path so the DB is always next to this source file
+    const dbPath = join(__dirname, '../../xadmin.db')
     _db = new Database(dbPath)
     _db.pragma('journal_mode = WAL')
     initSchema(_db)
@@ -37,7 +41,7 @@ function initSchema(db: Database.Database) {
     db.prepare(`
       INSERT INTO users (id, username, password, nickname, roles, permissions, enabled)
       VALUES (?, ?, ?, ?, ?, ?, ?)
-    `).run('1', 'admin', 'admin', '管理员', JSON.stringify(['admin']), JSON.stringify(['user:list', 'user:create', 'user:edit', 'user:delete']), 1)
+    `).run('1', 'admin', '$2b$10$89B6vpgDNKfu1.ODenIY2.HdKPHbFza96cIoIU.gtCbFQmCqYrm9K', '管理员', JSON.stringify(['admin']), JSON.stringify(['user:list', 'user:create', 'user:edit', 'user:delete']), 1)
     console.log('[XAdmin] Default admin user created (admin/admin)')
   }
 }
