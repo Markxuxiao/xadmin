@@ -4,7 +4,7 @@ import { AppModule } from './app.module'
 import { getDb } from '../../../packages/core/backend'
 
 async function bootstrap() {
-  // Initialize database (creates tables and seeds data)
+  // Initialize database (adds version + deletedAt columns, seeds data)
   getDb()
 
   const app = await NestFactory.create(AppModule)

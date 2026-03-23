@@ -1,3 +1,9 @@
+import { Entity, Filter, PrimaryKey, Property, Unique } from '@mikro-orm/core'
+
+// ============================================================================
+// Backward-compatible types (used by existing services until Phase 2)
+// ============================================================================
+
 export interface RoleRow {
   id: string
   name: string
@@ -22,4 +28,46 @@ export function rowToRole(row: RoleRow) {
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   }
+}
+
+// ============================================================================
+// MikroORM Entity (replaces raw SQL in Phase 2)
+// ============================================================================
+
+/**
+ * Soft-delete filter — auto-excludes soft-deleted roles from all queries.
+ */
+@Filter({ name: 'soft-delete', cond: { deletedAt: null } })
+@Entity()
+export class Role {
+  @PrimaryKey()
+  id!: string
+
+  @Property()
+  name!: string
+
+  @Unique()
+  @Property()
+  code!: string
+
+  @Property({ nullable: true })
+  description!: string | null
+
+  @Property()
+  permissions!: string
+
+  @Property()
+  enabled!: boolean
+
+  @Property({ field: 'created_at' })
+  createdAt!: Date
+
+  @Property({ field: 'updated_at', onUpdate: () => new Date() })
+  updatedAt!: Date
+
+  @Property({ field: 'deleted_at', nullable: true })
+  deletedAt!: Date | null
+
+  @Property({ field: 'version' })
+  version!: number
 }
