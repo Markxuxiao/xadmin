@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.2] - 2026-03-23
+
+### Security
+- **HIGH**: Replaced plaintext password storage with bcrypt hashing (cost factor 10) for user passwords at rest
+- **HIGH**: Replaced `Date.now().toString()` user IDs with `crypto.randomUUID()` for proper UUID entropy
+- **HIGH**: Added role-based access control: `POST/PUT/DELETE /user` endpoints now require `admin` role via `RolesGuard`
+- **HIGH**: Moved JWT signing secret from hardcoded fallback to `process.env.JWT_SECRET` environment variable
+- **HIGH**: Seed admin password now stored as bcrypt hash instead of plaintext
+- **MEDIUM**: Added `AuthGuard` to extract and validate JWT from `Authorization: Bearer` header on all `/user` endpoints
+
+### Changed
+- Refactored token storage to single source of truth in Pinia `useUserStore` — `client.ts` now reads from store instead of duplicating localStorage access
+
+### Added
+- Backend plugin system: `registerModules()` now maintains a registry of module entities and menu items for future MikroORM integration and dynamic menu building
+
 ## [0.1.1] - 2026-03-23
 
 ### Changed
