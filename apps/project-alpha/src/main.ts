@@ -13,6 +13,7 @@ import Framework from '@xadmin/frontend/views/Framework.vue'
 import Dashboard from '@xadmin/frontend/views/Dashboard.vue'
 import NotFound from '@xadmin/frontend/views/404.vue'
 import Forbidden from '@xadmin/frontend/views/403.vue'
+import UserList from '@xadmin/module-user/views/UserList.vue'
 
 const routes = [
   { path: '/login', name: 'login', component: Login },
@@ -22,6 +23,7 @@ const routes = [
     redirect: '/dashboard',
     children: [
       { path: '/dashboard', name: 'dashboard', component: Dashboard },
+      { path: '/system/user', name: 'system-user', component: UserList },
       { path: '/:pathMatch(.*)*', name: '404', component: NotFound }
     ]
   }
