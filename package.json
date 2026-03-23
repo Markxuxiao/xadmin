@@ -7,7 +7,7 @@
     "dev": "pnpm -r --parallel dev",
     "build": "pnpm -r build",
     "test": "pnpm -r test",
-    "backend:dev": "ts-node --esm --transpile-only apps/project-alpha/backend/main.ts"
+    "backend:dev": "ts-node --transpile-only --project apps/project-alpha/backend/tsconfig.json apps/project-alpha/backend/main.ts"
   },
   "engines": {
     "node": ">=18",
