@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.2] - 2026-03-24
+
+### Fixed
+- **AuthService**: Require `JWT_SECRET` env var (throw on startup if unset); add refresh token with rotation (`POST /auth/refresh`, `POST /auth/logout`); remove password field from `userToRow`
+- **UserService**: Add `findByUsername()` public method; set `department: null` on create; remove password from `userToRow`
+- **UserController**: Check username uniqueness before create; handle PostgreSQL unique constraint violation (code 23505)
+- **FileService**: Add `validateCategory()` preventing path traversal attacks; add soft-delete filter to `findOne`
+- **MenuService**: Refactor from hardcoded `DEFAULT_MENU_TREE` to PostgreSQL-backed `getMenuTree`/`getMenuTreeByRoles` with proper `buildTree` ancestor inclusion
+- **AuditLogService**: `JSON.parse` `responseBody` in `auditLogToRow`
+
+### Added
+- **Comprehensive test suite**: Full coverage for AuditLogService, DepartmentService, FileService, MenuService (294 tests total across 17 test files)
+- **Menu entity**: Database-driven menu tree with soft-delete support
+
+### Changed
+- **Frontend**: `api/client.ts` response interceptor now redirects to `/403` on 403 responses; `isTokenExpired` handles null `expiresAt` safely
+
 ## [0.2.0] - 2026-03-24
 
 ### Added
