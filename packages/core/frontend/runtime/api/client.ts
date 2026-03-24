@@ -29,7 +29,7 @@ client.interceptors.request.use(
   (error) => Promise.reject(error)
 )
 
-// Response interceptor: handle 401 by logging out
+// Response interceptor: handle 401 by logging out, 403 as unauthorized
 client.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -38,6 +38,11 @@ client.interceptors.response.use(
       userStore.logout()
       if (typeof window !== 'undefined') {
         window.location.href = '/login'
+      }
+    }
+    if (error.response?.status === 403) {
+      if (typeof window !== 'undefined') {
+        window.location.href = '/403'
       }
     }
     return Promise.reject(error)

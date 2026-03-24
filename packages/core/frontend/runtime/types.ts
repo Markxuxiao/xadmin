@@ -37,5 +37,6 @@ export interface TokenInfo {
 export function isTokenExpired(token: TokenInfo | null): boolean {
   if (!token) return true
   // Check if token is expired (with 30s buffer for clock skew)
-  return Date.now() >= token.expiresAt - 30000
+  const expiresAt = token.expiresAt ?? 0
+  return Date.now() >= expiresAt - 30000
 }
