@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest'
 import { MenuPermissionService } from '../core/menu-permission/menu-permission.service'
-import { AppService } from '../core/shared/app.service'
+import { MenuService } from '../core/menu/menu.service'
 import { RoleService } from '../core/role/role.service'
 import { createTestOrm, closeTestOrm } from './helpers/test-db'
 
@@ -288,8 +288,8 @@ describe('MenuPermissionService — CRUD (PostgreSQL)', () => {
   })
 })
 
-describe('AppService — getMenuTreeByRoles (PostgreSQL)', () => {
-  let appService: AppService
+describe('MenuService — getMenuTreeByRoles (PostgreSQL)', () => {
+  let menuService: MenuService
   let menuPermissionService: MenuPermissionService
   let roleService: RoleService
 
@@ -301,7 +301,7 @@ describe('AppService — getMenuTreeByRoles (PostgreSQL)', () => {
   })
 
   beforeEach(async () => {
-    appService = new AppService()
+    menuService = new MenuService()
     menuPermissionService = new MenuPermissionService()
     roleService = new RoleService()
   })
@@ -312,7 +312,7 @@ describe('AppService — getMenuTreeByRoles (PostgreSQL)', () => {
 
   describe('getMenuTree', () => {
     it('should return full menu tree without filtering', () => {
-      const menuTree = appService.getMenuTree()
+      const menuTree = menuService.getMenuTree()
       expect(menuTree.length).toBeGreaterThan(0)
       expect(menuTree.some(m => m.path === '/dashboard')).toBe(true)
       expect(menuTree.some(m => m.path === '/system')).toBe(true)
@@ -321,12 +321,12 @@ describe('AppService — getMenuTreeByRoles (PostgreSQL)', () => {
 
   describe('getMenuTreeByRoles', () => {
     it('should return empty array for empty role IDs', async () => {
-      const result = await appService.getMenuTreeByRoles([])
+      const result = await menuService.getMenuTreeByRoles([])
       expect(result).toEqual([])
     })
 
     it('should return full menu tree for admin role', async () => {
-      const result = await appService.getMenuTreeByRoles([adminRoleId])
+      const result = await menuService.getMenuTreeByRoles([adminRoleId])
       expect(result.length).toBeGreaterThan(0)
       expect(result.some(m => m.path === '/dashboard')).toBe(true)
       expect(result.some(m => m.path === '/system')).toBe(true)
@@ -340,7 +340,7 @@ describe('AppService — getMenuTreeByRoles (PostgreSQL)', () => {
         permissions: ['user:list', 'order:list'], // Only user:list and order:list
       })
 
-      const result = await appService.getMenuTreeByRoles([limitedRole!.id])
+      const result = await menuService.getMenuTreeByRoles([limitedRole!.id])
 
       // Should have dashboard (no permission required)
       expect(result.some(m => m.path === '/dashboard')).toBe(true)
@@ -364,7 +364,7 @@ describe('AppService — getMenuTreeByRoles (PostgreSQL)', () => {
         permissions: [], // No permissions
       })
 
-      const result = await appService.getMenuTreeByRoles([newRole!.id])
+      const result = await menuService.getMenuTreeByRoles([newRole!.id])
 
       // Dashboard has no permission requirement, should be included
       expect(result.some(m => m.path === '/dashboard')).toBe(true)
@@ -377,7 +377,7 @@ describe('AppService — getMenuTreeByRoles (PostgreSQL)', () => {
         permissions: ['order:list'],
       })
 
-      const result = await appService.getMenuTreeByRoles([newRole!.id])
+      const result = await menuService.getMenuTreeByRoles([newRole!.id])
 
       // /system has no permission requirement itself, so it's included even if all children are filtered
       // But its children should NOT be included since user lacks those permissions
@@ -390,7 +390,7 @@ describe('AppService — getMenuTreeByRoles (PostgreSQL)', () => {
     })
 
     it('should return full tree if any role is admin', async () => {
-      const result = await appService.getMenuTreeByRoles([userRoleId, adminRoleId])
+      const result = await menuService.getMenuTreeByRoles([userRoleId, adminRoleId])
       expect(result.length).toBeGreaterThan(0)
       // Should have both dashboard and system (full tree)
       expect(result.some(m => m.path === '/dashboard')).toBe(true)
