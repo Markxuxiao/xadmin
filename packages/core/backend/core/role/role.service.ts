@@ -1,61 +1,89 @@
 import { Injectable } from '@nestjs/common'
 import * as crypto from 'crypto'
-import { getDb, rowToRole, RoleRow } from '../../base'
+import { getOrm, Role } from '../../base'
 
 @Injectable()
 export class RoleService {
-  private db = getDb()
-
-  findAll() {
-    const rows = this.db.prepare('SELECT * FROM roles ORDER BY created_at DESC').all() as RoleRow[]
-    return rows.map(rowToRole)
+  /**
+   * Find all roles with optional data scope filter.
+   * @param dataScopeFilter - Optional MikroORM filter from DataPermissionGuard
+   */
+  async findAll(dataScopeFilter?: Record<string, any>) {
+    const em = getOrm().em.fork()
+    const filter = dataScopeFilter ? { ...dataScopeFilter } : {}
+    const roles = await em.find(Role, { ...filter, deletedAt: null })
+    return roles.map(r => this.roleToRow(r))
   }
 
-  findOne(id: string) {
-    const row = this.db.prepare('SELECT * FROM roles WHERE id = ?').get(id) as RoleRow | undefined
-    return row ? rowToRole(row) : null
+  async findOne(id: string) {
+    const em = getOrm().em.fork()
+    const role = await em.findOne(Role, { id, deletedAt: null })
+    return role ? this.roleToRow(role) : null
   }
 
-  findByCode(code: string) {
-    const row = this.db.prepare('SELECT * FROM roles WHERE code = ?').get(code) as RoleRow | undefined
-    return row ? rowToRole(row) : null
+  async findByCode(code: string) {
+    const em = getOrm().em.fork()
+    const role = await em.findOne(Role, { code })
+    return role ? this.roleToRow(role) : null
   }
 
-  create(data: { name: string; code: string; description?: string; permissions?: string[] }) {
-    const id = crypto.randomUUID()
-    const now = new Date().toISOString()
-    this.db.prepare(`
-      INSERT INTO roles (id, name, code, description, permissions, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
-    `).run(id, data.name, data.code, data.description ?? null, JSON.stringify(data.permissions ?? []), now, now)
-    return this.findOne(id)
+  async create(data: { name: string; code: string; description?: string; permissions?: string[] }) {
+    const em = getOrm().em.fork()
+    const now = new Date()
+    const role = em.create(Role, {
+      id: crypto.randomUUID(),
+      name: data.name,
+      code: data.code,
+      description: data.description ?? null,
+      permissions: JSON.stringify(data.permissions ?? []),
+      enabled: true,
+      createdAt: now,
+      updatedAt: now,
+      deletedAt: null,
+      version: 1,
+    })
+    await em.persistAndFlush(role)
+    return this.roleToRow(role)
   }
 
-  update(id: string, data: Partial<{ name: string; code: string; description: string; permissions: string[]; enabled: boolean }>) {
-    const existing = this.db.prepare('SELECT * FROM roles WHERE id = ?').get(id) as RoleRow | undefined
-    if (!existing) return null
+  async update(id: string, data: Partial<{ name: string; code: string; description: string; permissions: string[]; enabled: boolean }>) {
+    const em = getOrm().em.fork()
+    const role = await em.findOne(Role, { id })
+    if (!role) return null
 
-    const updates: string[] = []
-    const values: any[] = []
+    if (data.name !== undefined) { role.name = data.name }
+    if (data.code !== undefined) { role.code = data.code }
+    if (data.description !== undefined) { role.description = data.description }
+    if (data.permissions !== undefined) { role.permissions = JSON.stringify(data.permissions) }
+    if (data.enabled !== undefined) { role.enabled = data.enabled }
+    role.updatedAt = new Date()
 
-    if (data.name !== undefined) { updates.push('name = ?'); values.push(data.name) }
-    if (data.code !== undefined) { updates.push('code = ?'); values.push(data.code) }
-    if (data.description !== undefined) { updates.push('description = ?'); values.push(data.description) }
-    if (data.permissions !== undefined) { updates.push('permissions = ?'); values.push(JSON.stringify(data.permissions)) }
-    if (data.enabled !== undefined) { updates.push('enabled = ?'); values.push(data.enabled ? 1 : 0) }
-    updates.push('updated_at = ?')
-    values.push(new Date().toISOString())
-    values.push(id)
-
-    this.db.prepare(`UPDATE roles SET ${updates.join(', ')} WHERE id = ?`).run(...values)
-    return this.findOne(id)
+    await em.flush()
+    return this.roleToRow(role)
   }
 
-  delete(id: string) {
+  async delete(id: string) {
+    const em = getOrm().em.fork()
     // Prevent deletion of admin role
-    const role = this.findOne(id)
-    if (role?.code === 'admin') return { success: false, message: '不能删除管理员角色' }
-    const result = this.db.prepare('DELETE FROM roles WHERE id = ?').run(id)
-    return { success: result.changes > 0 }
+    const role = await em.findOne(Role, { id })
+    if (!role) return { success: false }
+    if (role.code === 'admin') return { success: false, message: '不能删除管理员角色' }
+
+    role.deletedAt = new Date()
+    await em.flush()
+    return { success: true }
+  }
+
+  private roleToRow(role: Role) {
+    return {
+      id: role.id,
+      name: role.name,
+      code: role.code,
+      description: role.description,
+      permissions: JSON.parse(role.permissions),
+      enabled: Boolean(role.enabled),
+      createdAt: role.createdAt instanceof Date ? role.createdAt.toISOString() : String(role.createdAt),
+      updatedAt: role.updatedAt instanceof Date ? role.updatedAt.toISOString() : String(role.updatedAt),
+    }
   }
 }

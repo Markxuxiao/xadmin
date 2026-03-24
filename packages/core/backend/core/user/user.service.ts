@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import * as crypto from 'crypto'
 import * as bcrypt from 'bcrypt'
-import { getDb, rowToUser, UserRow } from '../../base'
+import { getOrm, User } from '../../base'
 
 const JWT_SECRET = process.env.JWT_SECRET ?? 'xadmin-dev-secret-2026'
 
@@ -17,8 +17,6 @@ export interface TokenPayload {
 
 @Injectable()
 export class UserService {
-  private db = getDb()
-
   // Hash a password using bcrypt
   async hashPassword(password: string): Promise<string> {
     return bcrypt.hash(password, 10)
@@ -57,16 +55,17 @@ export class UserService {
   }
 
   // Authenticate user with username/password
-  async authenticate(username: string, password: string): Promise<UserRow | null> {
-    const row = this.db.prepare('SELECT * FROM users WHERE username = ? AND enabled = 1').get(username) as UserRow | undefined
-    if (!row) return null
-    const valid = await this.verifyPassword(password, row.password)
+  async authenticate(username: string, password: string) {
+    const em = getOrm().em.fork()
+    const user = await em.findOne(User, { username, enabled: true })
+    if (!user) return null
+    const valid = await this.verifyPassword(password, user.password)
     if (!valid) return null
-    return row
+    return this.userToRow(user)
   }
 
   // Generate JWT token for user
-  generateToken(user: UserRow): { token: string; expiresAt: number } {
+  generateToken(user: { id: string; username: string; nickname: string; roles: string; permissions: string }): { token: string; expiresAt: number } {
     const now = Math.floor(Date.now() / 1000)
     const exp = now + 15 * 60 // 15 minutes
     const payload = {
@@ -87,53 +86,91 @@ export class UserService {
     }
   }
 
-  // CRUD operations
-  findAll() {
-    const rows = this.db.prepare('SELECT * FROM users ORDER BY created_at DESC').all() as UserRow[]
-    return rows.map(rowToUser)
+  // Convert MikroORM User entity to row-compatible shape
+  private userToRow(user: User) {
+    return {
+      id: user.id,
+      username: user.username,
+      password: user.password,
+      nickname: user.nickname,
+      avatar: user.avatar,
+      roles: user.roles,
+      permissions: user.permissions,
+      enabled: user.enabled ? 1 : 0,
+      created_at: user.createdAt instanceof Date ? user.createdAt.toISOString() : String(user.createdAt),
+      updated_at: user.updatedAt instanceof Date ? user.updatedAt.toISOString() : String(user.updatedAt),
+      created_by: null,
+      updated_by: null,
+    }
   }
 
-  findOne(id: string) {
-    const row = this.db.prepare('SELECT * FROM users WHERE id = ?').get(id) as UserRow | undefined
-    return row ? rowToUser(row) : null
+  // CRUD operations
+
+  /**
+   * Find all users with optional data scope filter.
+   * @param dataScopeFilter - Optional MikroORM filter from DataPermissionGuard
+   */
+  async findAll(dataScopeFilter?: Record<string, any>) {
+    const em = getOrm().em.fork()
+    const filter = dataScopeFilter
+      ? { ...dataScopeFilter }
+      : {}
+    const users = await em.find(User, { ...filter, deletedAt: null })
+    return users.map(u => this.userToRow(u))
+  }
+
+  async findOne(id: string) {
+    const em = getOrm().em.fork()
+    const user = await em.findOne(User, { id, deletedAt: null })
+    return user ? this.userToRow(user) : null
   }
 
   async create(data: { username: string; password: string; nickname: string; roles?: string[]; permissions?: string[] }) {
-    const id = crypto.randomUUID()
-    const now = new Date().toISOString()
+    const em = getOrm().em.fork()
     const hashedPassword = await this.hashPassword(data.password)
-    this.db.prepare(`
-      INSERT INTO users (id, username, password, nickname, roles, permissions, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(id, data.username, hashedPassword, data.nickname, JSON.stringify(data.roles ?? []), JSON.stringify(data.permissions ?? []), now, now)
-    return this.findOne(id)
+    const now = new Date()
+    const user = em.create(User, {
+      id: crypto.randomUUID(),
+      username: data.username,
+      password: hashedPassword,
+      nickname: data.nickname,
+      avatar: null,
+      roles: JSON.stringify(data.roles ?? []),
+      permissions: JSON.stringify(data.permissions ?? []),
+      enabled: true,
+      createdAt: now,
+      updatedAt: now,
+      deletedAt: null,
+      version: 1,
+    })
+    await em.persistAndFlush(user)
+    return this.userToRow(user)
   }
 
   async update(id: string, data: Partial<{ password: string; nickname: string; roles: string[]; permissions: string[]; enabled: boolean }>) {
-    const existing = this.db.prepare('SELECT * FROM users WHERE id = ?').get(id) as UserRow | undefined
-    if (!existing) return null
-
-    const updates: string[] = []
-    const values: any[] = []
+    const em = getOrm().em.fork()
+    const user = await em.findOne(User, { id })
+    if (!user) return null
 
     if (data.password !== undefined) {
-      updates.push('password = ?')
-      values.push(await this.hashPassword(data.password))
+      user.password = await this.hashPassword(data.password)
     }
-    if (data.nickname !== undefined) { updates.push('nickname = ?'); values.push(data.nickname) }
-    if (data.roles !== undefined) { updates.push('roles = ?'); values.push(JSON.stringify(data.roles)) }
-    if (data.permissions !== undefined) { updates.push('permissions = ?'); values.push(JSON.stringify(data.permissions)) }
-    if (data.enabled !== undefined) { updates.push('enabled = ?'); values.push(data.enabled ? 1 : 0) }
-    updates.push('updated_at = ?')
-    values.push(new Date().toISOString())
-    values.push(id)
+    if (data.nickname !== undefined) { user.nickname = data.nickname }
+    if (data.roles !== undefined) { user.roles = JSON.stringify(data.roles) }
+    if (data.permissions !== undefined) { user.permissions = JSON.stringify(data.permissions) }
+    if (data.enabled !== undefined) { user.enabled = data.enabled }
+    user.updatedAt = new Date()
 
-    this.db.prepare(`UPDATE users SET ${updates.join(', ')} WHERE id = ?`).run(...values)
-    return this.findOne(id)
+    await em.flush()
+    return this.userToRow(user)
   }
 
-  delete(id: string) {
-    const result = this.db.prepare('DELETE FROM users WHERE id = ?').run(id)
-    return result.changes > 0
+  async delete(id: string) {
+    const em = getOrm().em.fork()
+    const user = await em.findOne(User, { id })
+    if (!user) return false
+    user.deletedAt = new Date()
+    await em.flush()
+    return true
   }
 }
