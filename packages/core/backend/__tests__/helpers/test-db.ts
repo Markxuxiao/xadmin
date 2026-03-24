@@ -9,6 +9,9 @@ import { MenuPermission } from '../../base/entities/menu-permission.entity'
 import { Notification } from '../../base/entities/notification.entity'
 import { ScheduledTask } from '../../base/entities/scheduled-task.entity'
 import { AuditLog } from '../../base/entities/audit-log.entity'
+import { Department } from '../../base/entities/department.entity'
+import { Menu } from '../../base/entities/menu.entity'
+import { FileRecord } from '../../base/entities/file.entity'
 import { setTestOrm, getOrm } from '../../base/database'
 export { getOrm }
 
@@ -62,7 +65,7 @@ export async function createTestOrm(): Promise<MikroORM> {
   await admin.end()
 
   _orm = await MikroORM.init({
-    entities: [User, Role, Dict, DataPermission, MenuPermission, Notification, ScheduledTask, AuditLog],
+    entities: [User, Role, Dict, DataPermission, MenuPermission, Notification, ScheduledTask, AuditLog, Department, Menu, FileRecord],
     driver: PostgreSqlDriver,
     host: process.env.PG_HOST ?? 'localhost',
     port: parseInt(process.env.PG_PORT ?? '5432', 10),
@@ -177,6 +180,99 @@ async function seedTestData(em: any) {
   })
 
   await em.persistAndFlush([cleanOldAuditLogsTask, countDailyUserActivityTask])
+
+  // Menu seed data for menu-permission tests
+  const dashboardMenu = em.create(Menu, {
+    id: 'd0000000-0000-0000-0000-000000000001',
+    path: '/dashboard',
+    title: '仪表盘',
+    icon: 'dashboard',
+    parentId: null,
+    sort: 1,
+    permission: null,
+    enabled: true,
+    deletedAt: null,
+    createdAt: now,
+    updatedAt: now,
+    version: 1,
+  })
+
+  const systemMenu = em.create(Menu, {
+    id: 'd0000000-0000-0000-0000-000000000002',
+    path: '/system',
+    title: '系统管理',
+    icon: 'system',
+    parentId: null,
+    sort: 2,
+    permission: null,
+    enabled: true,
+    deletedAt: null,
+    createdAt: now,
+    updatedAt: now,
+    version: 1,
+  })
+
+  const systemUserMenu = em.create(Menu, {
+    id: 'd0000000-0000-0000-0000-000000000003',
+    path: '/system/user',
+    title: '用户管理',
+    icon: 'user',
+    parentId: 'd0000000-0000-0000-0000-000000000002',
+    sort: 1,
+    permission: 'user:list',
+    enabled: true,
+    deletedAt: null,
+    createdAt: now,
+    updatedAt: now,
+    version: 1,
+  })
+
+  const systemRoleMenu = em.create(Menu, {
+    id: 'd0000000-0000-0000-0000-000000000004',
+    path: '/system/role',
+    title: '角色管理',
+    icon: 'role',
+    parentId: 'd0000000-0000-0000-0000-000000000002',
+    sort: 2,
+    permission: 'role:list',
+    enabled: true,
+    deletedAt: null,
+    createdAt: now,
+    updatedAt: now,
+    version: 1,
+  })
+
+  const orderMenu = em.create(Menu, {
+    id: 'd0000000-0000-0000-0000-000000000005',
+    path: '/order',
+    title: '订单管理',
+    icon: 'order',
+    parentId: null,
+    sort: 3,
+    permission: null,
+    enabled: true,
+    deletedAt: null,
+    createdAt: now,
+    updatedAt: now,
+    version: 1,
+  })
+
+  const orderListMenu = em.create(Menu, {
+    id: 'd0000000-0000-0000-0000-000000000006',
+    path: '/order/list',
+    title: '订单列表',
+    icon: 'list',
+    parentId: 'd0000000-0000-0000-0000-000000000005',
+    sort: 1,
+    permission: 'order:list',
+    enabled: true,
+    deletedAt: null,
+    createdAt: now,
+    updatedAt: now,
+    version: 1,
+  })
+
+  await em.persistAndFlush([dashboardMenu, systemMenu, systemUserMenu, systemRoleMenu, orderMenu, orderListMenu])
 }
 
 /**

@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest'
+import { BadRequestException } from '@nestjs/common'
 import { RoleService } from '../core/role/role.service'
 import { createTestOrm, closeTestOrm } from './helpers/test-db'
 
@@ -128,9 +129,7 @@ describe('RoleService — CRUD (PostgreSQL)', () => {
 
   it('should prevent deletion of admin role', async () => {
     const adminRole = await roleService.findByCode('admin')
-    const result = await roleService.delete(adminRole!.id)
-    expect(result.success).toBe(false)
-    expect(result.message).toBe('不能删除管理员角色')
+    await expect(roleService.delete(adminRole!.id)).rejects.toThrow(BadRequestException)
 
     const admin = await roleService.findOne(adminRole!.id)
     expect(admin).not.toBeNull()

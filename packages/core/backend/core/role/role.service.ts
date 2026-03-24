@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, BadRequestException } from '@nestjs/common'
 import * as crypto from 'crypto'
-import { getOrm, Role } from '../../base'
+import { getOrm, Role, MenuPermission, User } from '../../base'
 
 @Injectable()
 export class RoleService {
@@ -23,7 +23,7 @@ export class RoleService {
 
   async findByCode(code: string) {
     const em = getOrm().em.fork()
-    const role = await em.findOne(Role, { code })
+    const role = await em.findOne(Role, { code, deletedAt: null })
     return role ? this.roleToRow(role) : null
   }
 
@@ -48,7 +48,7 @@ export class RoleService {
 
   async update(id: string, data: Partial<{ name: string; code: string; description: string; permissions: string[]; enabled: boolean }>) {
     const em = getOrm().em.fork()
-    const role = await em.findOne(Role, { id })
+    const role = await em.findOne(Role, { id, deletedAt: null })
     if (!role) return null
 
     if (data.name !== undefined) { role.name = data.name }
@@ -64,10 +64,27 @@ export class RoleService {
 
   async delete(id: string) {
     const em = getOrm().em.fork()
-    // Prevent deletion of admin role
-    const role = await em.findOne(Role, { id })
+
+    // Check if role exists and is not deleted
+    const role = await em.findOne(Role, { id, deletedAt: null })
     if (!role) return { success: false }
-    if (role.code === 'admin') return { success: false, message: '不能删除管理员角色' }
+
+    // Prevent deletion of admin role
+    if (role.code === 'admin') {
+      throw new BadRequestException('Cannot delete admin role')
+    }
+
+    // Check if any users have this role assigned
+    const usersWithRole = await em.count(User, {
+      roles: { $like: `%"${id}"%` },
+      deletedAt: null,
+    })
+    if (usersWithRole > 0) {
+      throw new BadRequestException(`Cannot delete role: ${usersWithRole} users are assigned this role`)
+    }
+
+    // Cascade delete MenuPermission before deleting role
+    await em.nativeDelete(MenuPermission, { role: { id } })
 
     role.deletedAt = new Date()
     await em.flush()

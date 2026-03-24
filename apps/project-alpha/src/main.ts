@@ -48,13 +48,30 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const userStore = useUserStore()
 
-  if (to.path !== '/login' && !userStore.isLoggedIn) {
-    next('/login')
-  } else if (to.path === '/login' && userStore.isLoggedIn) {
-    next('/dashboard')
-  } else {
-    next()
+  if (to.path === '/login') {
+    if (userStore.isLoggedIn) {
+      next('/dashboard')
+    } else {
+      next()
+    }
+    return
   }
+
+  if (!userStore.isLoggedIn) {
+    next('/login')
+    return
+  }
+
+  // 权限检查：如果路由有 meta.permission，检查用户是否有此权限
+  if (to.meta?.permission) {
+    const hasPermission = userStore.hasPermission(to.meta.permission)
+    if (!hasPermission) {
+      next('/403')
+      return
+    }
+  }
+
+  next()
 })
 
 const app = createApp(App)

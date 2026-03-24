@@ -14,7 +14,14 @@ export interface TokenPayload {
   exp: number
 }
 
-const JWT_SECRET = process.env.JWT_SECRET ?? 'xadmin-dev-secret-2026'
+const _jwtSecret = process.env.JWT_SECRET
+if (!_jwtSecret) {
+  throw new Error('[Auth] JWT_SECRET environment variable is required but not set')
+}
+const JWT_SECRET: string = _jwtSecret
+
+const REFRESH_TOKEN_TTL = 7 * 24 * 60 * 60 * 1000 // 7 days
+const refreshTokens = new Map<string, { userId: string; expiresAt: number }>()
 
 @Injectable()
 export class AuthService {
@@ -58,7 +65,7 @@ export class AuthService {
     return this.userToRow(user)
   }
 
-  generateToken(user: { id: string; username: string; nickname: string; roles: string; permissions: string }): { token: string; expiresAt: number } {
+  generateToken(user: { id: string; username: string; nickname: string; roles: string; permissions: string }): { accessToken: string; refreshToken: string; expiresAt: number } {
     const now = Math.floor(Date.now() / 1000)
     const exp = now + 15 * 60 // 15 minutes
 
@@ -87,10 +94,41 @@ export class AuthService {
     const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url')
     const payloadB64 = Buffer.from(JSON.stringify(payload)).toString('base64url')
     const sig = crypto.createHmac('sha256', JWT_SECRET).update(`${header}.${payloadB64}`).digest('base64url')
+    const accessToken = `${header}.${payloadB64}.${sig}`
+
+    // Generate refresh token
+    const refreshToken = crypto.randomUUID()
+    refreshTokens.set(refreshToken, {
+      userId: user.id,
+      expiresAt: Date.now() + REFRESH_TOKEN_TTL,
+    })
+
     return {
-      token: `${header}.${payloadB64}.${sig}`,
+      accessToken,
+      refreshToken,
       expiresAt: exp * 1000,
     }
+  }
+
+  async refreshAccessToken(refreshToken: string): Promise<{ accessToken: string; refreshToken: string } | null> {
+    const tokenData = refreshTokens.get(refreshToken)
+    if (!tokenData) return null
+    if (Date.now() > tokenData.expiresAt) {
+      refreshTokens.delete(refreshToken)
+      return null
+    }
+
+    const em = getOrm().em.fork()
+    const user = await em.findOne(User, { id: tokenData.userId, enabled: true })
+    if (!user) return null
+
+    // Delete old refresh token (rotation)
+    refreshTokens.delete(refreshToken)
+    return this.generateToken(this.userToRow(user))
+  }
+
+  revokeRefreshToken(refreshToken: string): void {
+    refreshTokens.delete(refreshToken)
   }
 
   registerOnline(token: string, user: any): void {
@@ -111,7 +149,6 @@ export class AuthService {
     return {
       id: user.id,
       username: user.username,
-      password: user.password,
       nickname: user.nickname,
       avatar: user.avatar,
       roles: user.roles,

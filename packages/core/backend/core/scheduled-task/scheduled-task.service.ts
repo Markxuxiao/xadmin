@@ -76,6 +76,8 @@ export class ScheduledTaskService {
       lastExecutedAt: null,
       lastExecutedResult: null,
       consecutiveFailures: 0,
+      retryCount: 0,
+      retryInterval: 1000,
       isBuiltin: false,
       createdAt: now,
       updatedAt: now,
@@ -207,6 +209,8 @@ export class ScheduledTaskService {
         : task.lastExecutedAt,
       lastExecutedResult: task.lastExecutedResult,
       consecutiveFailures: task.consecutiveFailures,
+      retryCount: task.retryCount,
+      retryInterval: task.retryInterval,
       isBuiltin: task.isBuiltin,
       taskParams: task.taskParams,
       createdAt: task.createdAt instanceof Date

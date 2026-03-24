@@ -165,6 +165,14 @@ export class DepartmentService {
       throw new BadRequestException('请先删除子部门')
     }
 
+    // TODO: Check if any users are assigned to this department.
+    // Requires User entity to have a 'departmentId' property and corresponding
+    // 'department_id' column in the database. When User is extended with
+    // departmentId, uncomment and use:
+    // const usersInDept = await em.count(User, { departmentId: id, deletedAt: null })
+    // if (usersInDept > 0) throw new BadRequestException(`Cannot delete department: ${usersInDept} users assigned`)
+    // For now, soft-delete is safe since no users reference departments.
+
     const dept = await em.findOne(Department, { id })
     if (!dept) return false
 
@@ -214,6 +222,7 @@ export class DepartmentService {
       enabled: Boolean(dept.enabled),
       createdAt: dept.createdAt instanceof Date ? dept.createdAt.toISOString() : String(dept.createdAt),
       updatedAt: dept.updatedAt instanceof Date ? dept.updatedAt.toISOString() : String(dept.updatedAt),
+      deletedAt: dept.deletedAt,
     }
   }
 }

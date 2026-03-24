@@ -7,6 +7,14 @@ class LoginDto {
   password!: string
 }
 
+class RefreshDto {
+  refreshToken!: string
+}
+
+class LogoutDto {
+  refreshToken?: string
+}
+
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
@@ -19,12 +27,13 @@ export class AuthController {
     if (!user) {
       throw new UnauthorizedException('用户名或密码错误')
     }
-    const { token, expiresAt } = this.authService.generateToken(user)
-    this.authService.registerOnline(token, user)
+    const { accessToken, refreshToken, expiresAt } = this.authService.generateToken(user)
+    this.authService.registerOnline(accessToken, user)
     return {
       success: true,
       data: {
-        token,
+        accessToken,
+        refreshToken,
         expiresAt,
         user: {
           id: user.id,
@@ -35,5 +44,27 @@ export class AuthController {
         },
       },
     }
+  }
+
+  @Post('refresh')
+  @ApiOperation({ summary: '刷新访问令牌' })
+  async refresh(@Body() dto: RefreshDto) {
+    const result = await this.authService.refreshAccessToken(dto.refreshToken)
+    if (!result) {
+      throw new UnauthorizedException('Invalid or expired refresh token')
+    }
+    return {
+      success: true,
+      data: result,
+    }
+  }
+
+  @Post('logout')
+  @ApiOperation({ summary: '用户登出' })
+  async logout(@Body() dto: LogoutDto) {
+    if (dto.refreshToken) {
+      this.authService.revokeRefreshToken(dto.refreshToken)
+    }
+    return { success: true }
   }
 }

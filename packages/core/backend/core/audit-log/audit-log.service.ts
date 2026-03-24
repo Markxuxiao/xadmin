@@ -114,7 +114,7 @@ export class AuditLogService {
       method: log.method,
       requestBody: log.requestBody ? JSON.parse(log.requestBody) : null,
       statusCode: log.statusCode,
-      responseBody: log.responseBody,
+      responseBody: log.responseBody ? JSON.parse(log.responseBody) : null,
       ip: log.ip,
       userAgent: log.userAgent,
       error: log.error,

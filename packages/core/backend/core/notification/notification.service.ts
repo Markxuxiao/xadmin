@@ -184,7 +184,9 @@ export class NotificationService {
    */
   async findOne(id: string, userId: string): Promise<NotificationRow | null> {
     const em = getOrm().em.fork()
-    const notification = await em.findOne(Notification, { id, userId })
+    const notification = await em.findOne(Notification, { id, userId }, {
+      filters: ['soft-delete'],
+    })
     return notification ? this.toRow(notification) : null
   }
 

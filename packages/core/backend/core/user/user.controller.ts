@@ -44,8 +44,21 @@ export class UserController {
   @Roles('admin')
   @ApiOperation({ summary: '创建用户' })
   async create(@Body() data: any) {
-    const user = await this.userService.create(data)
-    return { success: true, data: user }
+    // Check if username already exists
+    const existing = await this.userService.findByUsername(data.username)
+    if (existing) {
+      return { success: false, message: '用户名已存在' }
+    }
+    try {
+      const user = await this.userService.create(data)
+      return { success: true, data: user }
+    } catch (err: any) {
+      // Handle UNIQUE constraint violation from PostgreSQL
+      if (err.code === '23505' || err.message?.includes('unique')) {
+        return { success: false, message: '用户名已存在' }
+      }
+      throw err
+    }
   }
 
   @Put(':id')

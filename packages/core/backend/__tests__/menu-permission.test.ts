@@ -311,11 +311,11 @@ describe('MenuService — getMenuTreeByRoles (PostgreSQL)', () => {
   })
 
   describe('getMenuTree', () => {
-    it('should return full menu tree without filtering', () => {
-      const menuTree = menuService.getMenuTree()
+    it('should return full menu tree without filtering', async () => {
+      const menuTree = await menuService.getMenuTree()
       expect(menuTree.length).toBeGreaterThan(0)
-      expect(menuTree.some(m => m.path === '/dashboard')).toBe(true)
-      expect(menuTree.some(m => m.path === '/system')).toBe(true)
+      expect(menuTree.some((m: any) => m.path === '/dashboard')).toBe(true)
+      expect(menuTree.some((m: any) => m.path === '/system')).toBe(true)
     })
   })
 
@@ -348,10 +348,10 @@ describe('MenuService — getMenuTreeByRoles (PostgreSQL)', () => {
       // Should have /system/user because user:list permission
       const systemMenu = result.find(m => m.path === '/system')
       expect(systemMenu).toBeDefined()
-      expect(systemMenu?.children?.some(c => c.path === '/system/user')).toBe(true)
+      expect(systemMenu?.children?.some((c: any) => c.path === '/system/user')).toBe(true)
 
       // Should NOT have /system/role because no role:list permission
-      expect(systemMenu?.children?.some(c => c.path === '/system/role')).toBe(false)
+      expect(systemMenu?.children?.some((c: any) => c.path === '/system/role')).toBe(false)
 
       // Should have /order/list because order:list permission
       expect(result.some(m => m.path === '/order')).toBe(true)

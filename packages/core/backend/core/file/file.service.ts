@@ -8,6 +8,25 @@ import { getOrm, FileRecord } from '../../base'
 const UPLOAD_DIR = process.env.UPLOAD_DIR || './uploads'
 const BASE_URL = process.env.UPLOAD_BASE_URL || '/uploads'
 
+/**
+ * 验证 category 参数，防止路径遍历攻击
+ */
+function validateCategory(category: string): void {
+  // 防止空 category 或路径穿越
+  if (!category || category !== category.replace(/\.\.?/g, '')) {
+    throw new BadRequestException('Invalid category: no path traversal allowed')
+  }
+  // 白名单格式校验：只允许 a-zA-Z0-9_-
+  if (!/^[a-zA-Z0-9_-]+$/.test(category)) {
+    throw new BadRequestException('Invalid category: only alphanumeric, underscore, and hyphen allowed')
+  }
+  // 限制目录深度（防止 a/b/c/../d 穿越）
+  const parts = category.split('/')
+  if (parts.length > 2) {
+    throw new BadRequestException('Invalid category: too deep')
+  }
+}
+
 @Injectable()
 export class FileService {
   /**
@@ -19,6 +38,7 @@ export class FileService {
     mimetype: string
     size: number
   }, category: string = 'attachment', uploader: { id: string; username: string }) {
+    validateCategory(category)
     const em = getOrm().em.fork()
     const now = new Date()
 
@@ -106,7 +126,7 @@ export class FileService {
    */
   async findOne(id: string) {
     const em = getOrm().em.fork()
-    const file = await em.findOne(FileRecord, { id })
+    const file = await em.findOne(FileRecord, { id }, { filters: ['soft-delete'] })
     if (!file) return null
     return {
       ...this.fileToRow(file),

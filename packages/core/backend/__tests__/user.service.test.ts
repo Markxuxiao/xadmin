@@ -97,6 +97,66 @@ describe('UserService — CRUD (PostgreSQL)', () => {
     expect(result).toBe(false)
   })
 
+  it('should find user by username when user exists', async () => {
+    const created = await userService.create({
+      username: 'findbyuser',
+      password: 'password123',
+      nickname: 'FindBy User',
+    })
+
+    const found = await userService.findByUsername('findbyuser')
+    expect(found).not.toBeNull()
+    expect(found!.username).toBe('findbyuser')
+    expect(found!.nickname).toBe('FindBy User')
+  })
+
+  it('should return null when finding user by username that does not exist', async () => {
+    const found = await userService.findByUsername('nonexistent_user_12345')
+    expect(found).toBeNull()
+  })
+
+  it('should perform full CRUD cycle: create -> findByUsername -> update -> delete', async () => {
+    // Create
+    const created = await userService.create({
+      username: 'crudcycle',
+      password: 'initialPass',
+      nickname: 'CRUD Cycle User',
+      roles: ['viewer'],
+      permissions: ['view:all'],
+    })
+    expect(created.id).toBeDefined()
+    expect(created.username).toBe('crudcycle')
+
+    // Find by username
+    const found = await userService.findByUsername('crudcycle')
+    expect(found).not.toBeNull()
+    expect(found!.username).toBe('crudcycle')
+    expect(found!.nickname).toBe('CRUD Cycle User')
+
+    // Update
+    const updated = await userService.update(created.id, {
+      nickname: 'Updated CRUD User',
+      password: 'newPassword789',
+      roles: ['editor'],
+    })
+    expect(updated).not.toBeNull()
+    expect(updated!.nickname).toBe('Updated CRUD User')
+    expect(JSON.parse(updated!.roles)).toEqual(['editor'])
+
+    // Verify new password works — use findByUsername to get raw entity with password
+    const reFetched = await userService.findByUsername('crudcycle')
+    const isValid = await userService.verifyPassword('newPassword789', reFetched!.password)
+    expect(isValid).toBe(true)
+
+    // Delete
+    const deleted = await userService.delete(created.id)
+    expect(deleted).toBe(true)
+
+    // Verify user is gone
+    const notFound = await userService.findByUsername('crudcycle')
+    expect(notFound).toBeNull()
+  })
+
   it('should update password correctly', async () => {
     const user = await userService.create({
       username: 'pwuser',

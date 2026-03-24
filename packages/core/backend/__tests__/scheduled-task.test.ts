@@ -165,6 +165,14 @@ describe('ScheduledTaskService — CRUD', () => {
     )
   })
 
+  it('should prevent modification of handler only for built-in tasks', async () => {
+    const all = await taskService.findAll()
+    const builtin = all.data.find(t => t.isBuiltin)!
+    await expect(taskService.update(builtin.id, { handler: 'some-other-handler' })).rejects.toThrow(
+      'Builtin task cron and handler cannot be modified'
+    )
+  })
+
   // -------------------------------------------------------------------------
   // delete
   // -------------------------------------------------------------------------
@@ -231,6 +239,49 @@ describe('ScheduledTaskService — CRUD', () => {
   it('should return null when enabling non-existent task', async () => {
     const result = await taskService.enable('00000000-0000-0000-0000-000000000999')
     expect(result).toBeNull()
+  })
+
+  it('should schedule task after enabling', async () => {
+    // Create a disabled task
+    const created = await taskService.create({
+      name: 'Enable Schedule Test',
+      cron: '0 0 * * *',
+      handler: 'clean-old-audit-logs',
+      enabled: false,
+    })
+
+    // Initially the task is not running (or running count unchanged)
+    const statusBefore = taskService.getExecutorStatus()
+    const countBefore = statusBefore.runningTaskCount
+
+    // Enable the task
+    await taskService.enable(created!.id)
+
+    // Task should now be scheduled (running count should increase)
+    const statusAfter = taskService.getExecutorStatus()
+    expect(statusAfter.runningTaskCount).toBeGreaterThan(countBefore)
+  })
+
+  it('should stop scheduling task after disabling', async () => {
+    // Create an enabled task
+    const created = await taskService.create({
+      name: 'Disable Schedule Test',
+      cron: '0 0 * * *',
+      handler: 'clean-old-audit-logs',
+      enabled: true,
+    })
+
+    // Verify it is running
+    const statusBefore = taskService.getExecutorStatus()
+    const countBefore = statusBefore.runningTaskCount
+    expect(countBefore).toBeGreaterThan(0)
+
+    // Disable the task
+    await taskService.disable(created!.id)
+
+    // Task should no longer be scheduled (running count should decrease)
+    const statusAfter = taskService.getExecutorStatus()
+    expect(statusAfter.runningTaskCount).toBeLessThan(countBefore)
   })
 
   // -------------------------------------------------------------------------
@@ -385,6 +436,8 @@ describe('TaskExecutor — built-in task execution', () => {
       lastExecutedAt: null,
       lastExecutedResult: null,
       consecutiveFailures: 0,
+      retryCount: 0,
+      retryInterval: 1000,
       isBuiltin: false,
       taskParams: null,
       createdAt: now,
@@ -423,6 +476,8 @@ describe('TaskExecutor — built-in task execution', () => {
       lastExecutedAt: null,
       lastExecutedResult: 'failed', // pre-set to failed
       consecutiveFailures: 3,
+      retryCount: 0,
+      retryInterval: 1000,
       isBuiltin: false,
       taskParams: null,
       createdAt: now,
@@ -455,6 +510,8 @@ describe('TaskExecutor — built-in task execution', () => {
       lastExecutedAt: null,
       lastExecutedResult: null,
       consecutiveFailures: 0,
+      retryCount: 0,
+      retryInterval: 1000,
       isBuiltin: false,
       taskParams: null,
       createdAt: now,

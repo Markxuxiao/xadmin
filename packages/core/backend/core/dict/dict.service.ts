@@ -6,24 +6,27 @@ import { getOrm, Dict, DictItem } from '../../base'
 export class DictService {
   async findAll(type?: string) {
     const em = getOrm().em.fork()
-    const where: any = { deletedAt: null }
+    const where: any = {}
     if (type) {
       where.type = type
       where.enabled = true
     }
-    const dicts = await em.find(Dict, where, { orderBy: { sort: 'ASC' } })
+    const dicts = await em.find(Dict, where, {
+      filters: ['soft-delete'],
+      orderBy: { sort: 'ASC' },
+    })
     return dicts.map(d => this.dictToRow(d))
   }
 
   async findOne(id: string) {
     const em = getOrm().em.fork()
-    const dict = await em.findOne(Dict, { id, deletedAt: null })
+    const dict = await em.findOne(Dict, { id }, { filters: ['soft-delete'] })
     return dict ? this.dictToRow(dict) : null
   }
 
   async findByCode(code: string) {
     const em = getOrm().em.fork()
-    const dict = await em.findOne(Dict, { code, deletedAt: null })
+    const dict = await em.findOne(Dict, { code }, { filters: ['soft-delete'] })
     return dict ? this.dictToRow(dict) : null
   }
 
@@ -87,6 +90,8 @@ export class DictService {
 
   async delete(id: string) {
     const em = getOrm().em.fork()
+    // No reference check needed — no other entity stores a FK to Dict.
+    // Dict entries are self-contained key-value lookups.
     const dict = await em.findOne(Dict, { id })
     if (!dict) return false
     dict.deletedAt = new Date()

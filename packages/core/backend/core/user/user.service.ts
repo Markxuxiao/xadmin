@@ -30,6 +30,11 @@ export class UserService {
     return user ? this.userToRow(user) : null
   }
 
+  async findByUsername(username: string): Promise<User | null> {
+    const em = getOrm().em.fork()
+    return em.findOne(User, { username, deletedAt: null })
+  }
+
   async create(data: { username: string; password: string; nickname: string; roles?: string[]; permissions?: string[] }) {
     const em = getOrm().em.fork()
     const hashedPassword = await this.hashPassword(data.password)
@@ -46,6 +51,7 @@ export class UserService {
       createdAt: now,
       updatedAt: now,
       deletedAt: null,
+      department: null,
       version: 1,
     })
     await em.persistAndFlush(user)
@@ -85,7 +91,6 @@ export class UserService {
     return {
       id: user.id,
       username: user.username,
-      password: user.password,
       nickname: user.nickname,
       avatar: user.avatar,
       roles: user.roles,

@@ -32,8 +32,38 @@ export function getTaskHandler(name: string): TaskHandler | undefined {
 export class TaskExecutor implements OnModuleInit, OnModuleDestroy {
   /** 正在运行的任务映射: taskId -> cron task */
   private runningTasks: Map<string, cron.ScheduledTask> = new Map()
+  /** 正在执行的任务 ID 集合（防止同实例内重叠执行） */
+  private executingTasks: Set<string> = new Set()
 
   constructor() {}
+
+  /**
+   * 获取分布式锁（使用 PostgreSQL advisory lock）
+   */
+  async acquireDistributedLock(taskId: string, ttlMs: number = 30000): Promise<boolean> {
+    try {
+      const em = getOrm().em.fork()
+      // 使用 taskId 的 hash 作为 lock key
+      const lockKey = Math.abs(taskId.split('').reduce((a, c) => ((a << 5) - a + c.charCodeAt(0)) | 0, 0))
+      const result = await em.execute(`SELECT pg_try_advisory_lock(${lockKey}) as acquired`)
+      return result?.[0]?.acquired === true
+    } catch {
+      return false
+    }
+  }
+
+  /**
+   * 释放分布式锁
+   */
+  async releaseDistributedLock(taskId: string): Promise<void> {
+    try {
+      const em = getOrm().em.fork()
+      const lockKey = Math.abs(taskId.split('').reduce((a, c) => ((a << 5) - a + c.charCodeAt(0)) | 0, 0))
+      await em.execute(`SELECT pg_advisory_unlock(${lockKey})`)
+    } catch {
+      // ignore
+    }
+  }
 
   async onModuleInit() {
     // 启动时加载所有启用的任务
@@ -83,7 +113,26 @@ export class TaskExecutor implements OnModuleInit, OnModuleDestroy {
 
     // 创建并启动 cron 任务
     const scheduledTask = cron.schedule(task.cron, async () => {
-      await this.executeTask(task)
+      // 防止同实例内重叠执行
+      if (this.executingTasks.has(task.id)) {
+        console.log(`[TaskExecutor] Task ${task.name} skipped - previous execution still running`)
+        return
+      }
+
+      // 先尝试获取分布式锁
+      const acquired = await this.acquireDistributedLock(task.id)
+      if (!acquired) {
+        console.log(`[TaskExecutor] Task ${task.name} skipped - another instance is executing`)
+        return
+      }
+
+      this.executingTasks.add(task.id)
+      try {
+        await this.executeTask(task)
+      } finally {
+        await this.releaseDistributedLock(task.id)
+        this.executingTasks.delete(task.id)
+      }
     }, {
       scheduled: true,
       timezone: 'Asia/Shanghai',
@@ -126,32 +175,44 @@ export class TaskExecutor implements OnModuleInit, OnModuleDestroy {
       return { success: false, error: `Handler not found: ${task.handler}` }
     }
 
-    const startTime = Date.now()
-    console.log(`[TaskExecutor] Executing task: ${task.name}`)
+    const maxRetries = task.retryCount ?? 0
+    let lastError: Error | undefined
 
-    try {
-      // 解析任务参数
-      const params = task.taskParams ? JSON.parse(task.taskParams) : undefined
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      const startTime = Date.now()
+      console.log(`[TaskExecutor] Executing task: ${task.name} (attempt ${attempt + 1})`)
 
-      // 执行处理器
-      await handler(params)
+      try {
+        // 解析任务参数
+        const params = task.taskParams ? JSON.parse(task.taskParams) : undefined
 
-      const duration = Date.now() - startTime
-      console.log(`[TaskExecutor] Task completed: ${task.name} (${duration}ms)`)
+        // 执行处理器
+        await handler(params)
 
-      // 更新任务状态
-      await this.updateTaskStatus(task.id, 'success')
+        const duration = Date.now() - startTime
+        console.log(`[TaskExecutor] Task completed: ${task.name} (${duration}ms)`)
 
-      return { success: true }
-    } catch (error: any) {
-      const duration = Date.now() - startTime
-      console.error(`[TaskExecutor] Task failed: ${task.name} (${duration}ms)`, error?.message)
+        // 更新任务状态
+        await this.updateTaskStatus(task.id, 'success')
 
-      // 更新任务状态
-      await this.updateTaskStatus(task.id, 'failed', error?.message)
+        return { success: true }
+      } catch (error: any) {
+        lastError = error
+        const duration = Date.now() - startTime
+        console.error(`[TaskExecutor] Task failed: ${task.name} (${duration}ms, attempt ${attempt + 1})`, error?.message)
 
-      return { success: false, error: error?.message }
+        if (attempt < maxRetries) {
+          const interval = task.retryInterval ?? 1000
+          console.log(`[TaskExecutor] Retrying task ${task.name} in ${interval}ms...`)
+          await new Promise(r => setTimeout(r, interval))
+        }
+      }
     }
+
+    // 所有重试都失败了
+    await this.updateTaskStatus(task.id, 'failed', lastError?.message)
+
+    return { success: false, error: lastError?.message }
   }
 
   /**

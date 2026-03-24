@@ -1,29 +1,56 @@
-import { Controller, Get, Req } from '@nestjs/common'
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger'
+import { Controller, Get, Post, Put, Delete, Param, Body } from '@nestjs/common'
 import { MenuService } from './menu.service'
 
-@ApiTags('menu')
-@ApiBearerAuth('JWT-auth')
 @Controller('menu')
 export class MenuController {
   constructor(private readonly menuService: MenuService) {}
 
   @Get('tree')
-  @ApiOperation({ summary: '获取菜单树' })
-  async getMenuTree(@Req() req: any) {
-    const userRoles: string[] = req.user?.roles ?? []
+  async getMenuTree() {
+    return this.menuService.getMenuTree()
+  }
 
-    if (userRoles.length === 0) {
-      return {
-        success: true,
-        data: [],
-      }
+  @Get()
+  async findAll() {
+    return this.menuService.findAll()
+  }
+
+  @Get(':id')
+  async findOne(@Param('id') id: string) {
+    const menu = await this.menuService.findById(id)
+    if (!menu) {
+      return { success: false, message: '菜单不存在' }
     }
+    return { success: true, data: menu }
+  }
 
-    const menus = await this.menuService.getMenuTreeByRoles(userRoles)
-    return {
-      success: true,
-      data: menus,
+  @Post()
+  async create(@Body() data: any) {
+    try {
+      const menu = await this.menuService.create(data)
+      return { success: true, data: menu }
+    } catch (err: any) {
+      return { success: false, message: err.message }
+    }
+  }
+
+  @Put(':id')
+  async update(@Param('id') id: string, @Body() data: any) {
+    try {
+      const menu = await this.menuService.update(id, data)
+      return { success: true, data: menu }
+    } catch (err: any) {
+      return { success: false, message: err.message }
+    }
+  }
+
+  @Delete(':id')
+  async delete(@Param('id') id: string) {
+    try {
+      await this.menuService.delete(id)
+      return { success: true }
+    } catch (err: any) {
+      return { success: false, message: err.message }
     }
   }
 }
