@@ -2,7 +2,6 @@ import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common'
 import * as cron from 'node-cron'
 import { ScheduledTask, ScheduledTaskRow } from '../../base/entities/scheduled-task.entity'
 import { getOrm } from '../../base/database'
-import { AuditLogService } from '../audit-log/audit-log.service'
 
 /**
  * 任务处理器注册表

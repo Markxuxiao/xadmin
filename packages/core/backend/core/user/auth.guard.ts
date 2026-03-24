@@ -1,9 +1,9 @@
 import { Injectable, UnauthorizedException, CanActivate, ExecutionContext } from '@nestjs/common'
-import { UserService } from './user.service'
+import { AuthService } from '../auth/auth.service'
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-  constructor(private userService: UserService) {}
+  constructor(private authService: AuthService) {}
 
   canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest()
@@ -12,7 +12,7 @@ export class AuthGuard implements CanActivate {
       throw new UnauthorizedException('Missing token')
     }
     const token = authHeader.slice(7)
-    const user = this.userService.getCurrentUser(token)
+    const user = this.authService.getCurrentUser(token)
     if (!user) {
       throw new UnauthorizedException('Invalid or expired token')
     }

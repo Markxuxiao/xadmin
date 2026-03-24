@@ -15,11 +15,12 @@ export class AuthController {
   @Post('login')
   @ApiOperation({ summary: '用户登录' })
   async login(@Body() dto: LoginDto) {
-    const user = await this.authService.validateUser(dto.username, dto.password)
+    const user = await this.authService.authenticate(dto.username, dto.password)
     if (!user) {
       throw new UnauthorizedException('用户名或密码错误')
     }
     const { token, expiresAt } = this.authService.generateToken(user)
+    this.authService.registerOnline(token, user)
     return {
       success: true,
       data: {

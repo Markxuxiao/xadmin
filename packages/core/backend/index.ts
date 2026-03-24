@@ -8,7 +8,6 @@ export * from './core/file'
 export * from './core/department'
 export * from './core/menu'
 export * from './core/menu-permission'
-export * from './core/shared'
 export * from './core/swagger'
 export * from './core/online-user'
 

@@ -1,14 +1,13 @@
 import { Module } from '@nestjs/common'
 import { RoleController } from './role.controller'
 import { RoleService } from './role.service'
-import { UserModule } from '../user/user.module'
 import { DataPermissionModule } from '../../base/guards/data-permission.module'
 
 // Reflector is global in NestJS but needs to be explicitly available for DI
 import { Reflector } from '@nestjs/core'
 
 @Module({
-  imports: [UserModule, DataPermissionModule],
+  imports: [DataPermissionModule],
   controllers: [RoleController],
   providers: [RoleService, Reflector],
   exports: [RoleService],

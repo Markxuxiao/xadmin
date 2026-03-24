@@ -44,18 +44,11 @@ const DEFAULT_MENU_TREE: MenuItem[] = [
 ]
 
 @Injectable()
-export class AppService {
-  /**
-   * Get full menu tree (no filtering) - used for admin or when no roles provided.
-   */
+export class MenuService {
   getMenuTree(): MenuItem[] {
     return DEFAULT_MENU_TREE
   }
 
-  /**
-   * Get menu tree filtered by user roles.
-   * If user has admin role ('*' permission) or no roles, returns full menu.
-   */
   async getMenuTreeByRoles(roleIds: string[]): Promise<MenuItem[]> {
     if (!roleIds || roleIds.length === 0) {
       return []
@@ -63,7 +56,6 @@ export class AppService {
 
     const em = getOrm().em.fork()
 
-    // Check if user is admin
     const roles = await em.find(Role, { id: roleIds as any }, { filters: ['soft-delete'] })
     const isAdmin = roles.some(r => {
       try {
@@ -78,7 +70,6 @@ export class AppService {
       return DEFAULT_MENU_TREE
     }
 
-    // Get user's action permissions from role.permissions (e.g., 'user:list', 'role:list')
     const userPermissions = new Set<string>()
     for (const role of roles) {
       try {
@@ -89,26 +80,18 @@ export class AppService {
       }
     }
 
-    // Filter menu tree based on permissions
     return this.filterMenuByPermissions(DEFAULT_MENU_TREE, userPermissions)
   }
 
-  /**
-   * Filter menu tree by checking if the required permission is in user's permissions.
-   */
   private filterMenuByPermissions(menus: MenuItem[], userPermissions: Set<string>): MenuItem[] {
     const result: MenuItem[] = []
 
     for (const menu of menus) {
       const requiredPermission = menu.meta?.permission
 
-      // If no permission required, include the menu
-      // If user has the required permission, include the menu
       if (!requiredPermission || userPermissions.has(requiredPermission)) {
-        // Check if menu has children that need filtering
         if (menu.children && menu.children.length > 0) {
           const filteredChildren = this.filterMenuByPermissions(menu.children, userPermissions)
-          // Include parent if it has no permission requirement OR if it has visible children
           if (!requiredPermission || filteredChildren.length > 0) {
             result.push({
               ...menu,

@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common'
 import { MenuController } from './menu.controller'
-import { SharedModule } from '../shared/shared.module'
+import { MenuService } from './menu.service'
 
 @Module({
-  imports: [SharedModule],
   controllers: [MenuController],
+  providers: [MenuService],
+  exports: [MenuService],
 })
 export class MenuModule {}
