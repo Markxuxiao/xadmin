@@ -19,7 +19,7 @@ apps/
 ## 技术栈
 
 - **前端**: Vue 3 + Vite 8 + Element Plus + Pinia + Vue Router
-- **后端**: NestJS + better-sqlite3 (SQLite)
+- **后端**: NestJS + MikroORM + PostgreSQL
 - **工程**: pnpm Monorepo + Workspace
 
 ## 核心设计原则
@@ -37,7 +37,7 @@ apps/
 ## Testing
 
 - **Framework**: Vitest + @vue/test-utils + happy-dom
-- **Run**: `cd apps/project-alpha && pnpm test`
+- **Run**: `cd packages/core/backend && pnpm test`
 - **Doc**: See `TESTING.md` for conventions and expectations
 - **Goal**: 100% coverage for new code
   - When writing a new function, write a corresponding test

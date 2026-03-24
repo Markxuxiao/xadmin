@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.0] - 2026-03-24
+
+### Added
+- **PostgreSQL + MikroORM**: Migrated from SQLite to PostgreSQL via MikroORM with proper entity definitions, migrations, and schema management
+- **字典管理 (Dict)**: CRUD API + 前端页面，支持字典类型、字典项管理
+- **操作日志 (AuditLog)**: 完整 CRUD + 审计拦截器，自动记录所有 CRUD 操作
+- **文件管理 (File)**: 本地存储上传/删除 API，支持文件记录和引用计数
+- **部门管理 (Department)**: 树形结构 CRUD，支持父子部门软删除
+- **菜单权限 (MenuPermission)**: 基于角色的菜单路径权限管理
+- **数据权限 (DataPermission)**: 行级数据权限控制，支持全部/本部门/本人/自定义范围
+- **在线用户 (OnlineUser)**: 内存 Map 管理在线用户状态
+- **通知管理 (Notification)**: 通知发送/标记已读，支持多种通知类型
+- **定时任务 (ScheduledTask)**: Cron 表达式调度任务执行，内置清理旧日志和统计任务
+- **Swagger 文档**: @nestjs/swagger 集成 API 文档
+
+### Fixed
+- MenuPermission 软删除筛选修复
+- TypeScript 编译错误全修复 (field→fieldName, filter→filters)
+- NestJS 异常标准化 (Error → BadRequestException/NotFoundException)
+- JSON.parse 错误处理完善
+
 ## [0.1.3] - 2026-03-23
 
 ### Added
