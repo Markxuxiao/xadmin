@@ -118,15 +118,13 @@ export class ScheduledTaskService {
       }
     }
 
-    if (data.name !== undefined) { task.name = data.name }
-    if (data.description !== undefined) { task.description = data.description }
-    if (data.cron !== undefined) { task.cron = data.cron }
-    if (data.handler !== undefined) { task.handler = data.handler }
-    if (data.enabled !== undefined) { task.enabled = data.enabled }
-    if (data.taskParams !== undefined) { task.taskParams = JSON.stringify(data.taskParams) }
-
-    task.updatedAt = new Date()
-
+    const assignData = Object.fromEntries(
+      Object.entries({
+        ...data,
+        taskParams: data.taskParams !== undefined ? JSON.stringify(data.taskParams) : undefined,
+      }).filter(([, v]) => v !== undefined)
+    )
+    em.assign(task, assignData)
     await em.flush()
 
     // 更新任务调度

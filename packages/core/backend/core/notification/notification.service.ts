@@ -143,8 +143,7 @@ export class NotificationService {
     const notification = await em.findOne(Notification, { id, userId })
     if (!notification) return false
 
-    notification.isRead = true
-    notification.updatedAt = new Date()
+    em.assign(notification, { isRead: true })
     await em.flush()
     return true
   }
@@ -157,11 +156,7 @@ export class NotificationService {
     const notifications = await em.find(Notification, { userId, isRead: false })
     if (notifications.length === 0) return 0
 
-    const now = new Date()
-    notifications.forEach(n => {
-      n.isRead = true
-      n.updatedAt = now
-    })
+    notifications.forEach(n => em.assign(n, { isRead: true }))
     await em.flush()
     return notifications.length
   }

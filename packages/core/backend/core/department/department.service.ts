@@ -138,15 +138,7 @@ export class DepartmentService {
       }
     }
 
-    if (data.name !== undefined) dept.name = data.name
-    if (data.code !== undefined) dept.code = data.code
-    if (data.parentId !== undefined) dept.parentId = data.parentId
-    if (data.sort !== undefined) dept.sort = data.sort
-    if (data.leader !== undefined) dept.leader = data.leader
-    if (data.phone !== undefined) dept.phone = data.phone
-    if (data.email !== undefined) dept.email = data.email
-    if (data.enabled !== undefined) dept.enabled = data.enabled
-    dept.updatedAt = new Date()
+    em.assign(dept, data)
 
     await em.flush()
     return this.deptToRow(dept)

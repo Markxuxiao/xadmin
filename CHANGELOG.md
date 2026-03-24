@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.3] - 2026-03-24
+
+### Changed
+- **Services**: Migrate all service `update()` methods from manual `if-assignment` patterns to `em.assign()` batch assignment for cleaner code
+- **BaseEntity**: Enhanced documentation with fieldName mappings clarification (MikroORM v6 decorator inheritance limitation)
+
+### Fixed
+- **NotificationService**: Use `em.assign()` for `markAsRead`/`markAllAsRead`; remove redundant `updatedAt` manual assignments (now handled by entity `onUpdate` hook)
+
 ## [0.2.2] - 2026-03-24
 
 ### Fixed

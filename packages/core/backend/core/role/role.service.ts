@@ -51,12 +51,13 @@ export class RoleService {
     const role = await em.findOne(Role, { id, deletedAt: null })
     if (!role) return null
 
-    if (data.name !== undefined) { role.name = data.name }
-    if (data.code !== undefined) { role.code = data.code }
-    if (data.description !== undefined) { role.description = data.description }
-    if (data.permissions !== undefined) { role.permissions = JSON.stringify(data.permissions) }
-    if (data.enabled !== undefined) { role.enabled = data.enabled }
-    role.updatedAt = new Date()
+    const assignData = Object.fromEntries(
+      Object.entries({
+        ...data,
+        permissions: data.permissions !== undefined ? JSON.stringify(data.permissions) : undefined,
+      }).filter(([, v]) => v !== undefined)
+    )
+    em.assign(role, assignData)
 
     await em.flush()
     return this.roleToRow(role)
