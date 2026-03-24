@@ -21,11 +21,15 @@ cd packages/core/backend && pnpm test
 ```
 packages/core/backend/__tests__/       # Backend core tests
   ├── helpers/test-db.ts               # Test ORM setup
+  ├── audit-log.test.ts
   ├── auth-guard.test.ts
   ├── auth.service.test.ts
   ├── data-permission.test.ts
+  ├── department.test.ts
   ├── dict.test.ts
+  ├── file.test.ts
   ├── menu-permission.test.ts
+  ├── menu.test.ts
   ├── notification.test.ts
   ├── online-user.test.ts
   ├── role-entity.test.ts
