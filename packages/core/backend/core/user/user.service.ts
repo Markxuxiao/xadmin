@@ -68,12 +68,26 @@ export class UserService {
   generateToken(user: { id: string; username: string; nickname: string; roles: string; permissions: string }): { token: string; expiresAt: number } {
     const now = Math.floor(Date.now() / 1000)
     const exp = now + 15 * 60 // 15 minutes
+
+    let permissions: string[] = []
+    let roles: string[] = []
+    try {
+      permissions = JSON.parse(user.permissions)
+    } catch {
+      // malformed JSON in DB — treat as empty
+    }
+    try {
+      roles = JSON.parse(user.roles)
+    } catch {
+      // malformed JSON in DB — treat as empty
+    }
+
     const payload = {
       sub: user.id,
       username: user.username,
       nickname: user.nickname,
-      permissions: JSON.parse(user.permissions),
-      roles: JSON.parse(user.roles),
+      permissions,
+      roles,
       iat: now,
       exp,
     }
