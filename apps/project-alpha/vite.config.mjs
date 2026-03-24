@@ -12,11 +12,22 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      '@': resolve(__dirname, 'src')
+      '@': resolve(__dirname, 'src'),
+      '@xadmin/frontend': resolve(__dirname, '../../packages/core/frontend'),
+      '@xadmin/backend': resolve(__dirname, '../../packages/core/backend'),
+      '@xadmin/module-user': resolve(__dirname, '../../packages/module-user'),
+      '@xadmin/module-order': resolve(__dirname, '../../packages/module-order'),
     }
   },
   server: {
     port: 3000,
-    open: false
+    open: false,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, '')
+      }
+    }
   }
 })

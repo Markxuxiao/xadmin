@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "description": "XAdmin 用户模块",
   "dependencies": {
-    "@xadmin/backend": "workspace:*"
+    "@xadmin/backend": "workspace:*",
+    "@xadmin/frontend": "workspace:*"
   }
 }

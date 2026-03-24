@@ -1,0 +1,36 @@
+{
+  "name": "@xadmin/backend",
+  "version": "0.1.0",
+  "description": "XAdmin 后端核心",
+  "main": "index.ts",
+  "scripts": {
+    "test": "vitest run --config vitest.config.mjs",
+    "test:watch": "vitest --config vitest.config.mjs"
+  },
+  "dependencies": {
+    "@mikro-orm/core": "^6.6.9",
+    "@mikro-orm/nestjs": "^6.1.2",
+    "@mikro-orm/postgresql": "^6.2.0",
+    "@nestjs/common": "^10.3.0",
+    "@nestjs/core": "^10.3.0",
+    "@nestjs/platform-express": "^10.3.0",
+    "@nestjs/swagger": "^7.4.0",
+    "bcrypt": "^6.0.0",
+    "node-cron": "^3.0.3",
+    "pg": "^8.13.0",
+    "reflect-metadata": "^0.2.0",
+    "rxjs": "^7.8.0",
+    "swagger-ui-express": "^5.0.1"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
+    "@types/express": "^5.0.6",
+    "@types/multer": "^2.1.0",
+    "@types/node-cron": "^3.0.11",
+    "@types/pg": "^8.11.0",
+    "esbuild": "^0.27.4",
+    "tsx": "^4.21.0",
+    "vite": "^5.4.21",
+    "vitest": "^1.6.0"
+  }
+}
