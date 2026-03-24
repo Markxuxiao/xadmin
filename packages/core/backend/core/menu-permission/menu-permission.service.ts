@@ -18,7 +18,7 @@ export class MenuPermissionService {
    */
   async findByRoleId(roleId: string): Promise<MenuPermissionRow[]> {
     const em = getOrm().em.fork()
-    const permissions = await em.find(MenuPermission, { role: roleId as any }, { filter: ['soft-delete'] })
+    const permissions = await em.find(MenuPermission, { role: roleId as any, deletedAt: null })
     return permissions.map(p => this.toRow(p))
   }
 
@@ -28,7 +28,7 @@ export class MenuPermissionService {
   async findByRoleIds(roleIds: string[]): Promise<MenuPermissionRow[]> {
     if (roleIds.length === 0) return []
     const em = getOrm().em.fork()
-    const permissions = await em.find(MenuPermission, { role: roleIds as any }, { filter: ['soft-delete'] })
+    const permissions = await em.find(MenuPermission, { role: roleIds as any, deletedAt: null })
     return permissions.map(p => this.toRow(p))
   }
 
@@ -42,7 +42,7 @@ export class MenuPermissionService {
     const em = getOrm().em.fork()
 
     // Check if user is admin (has '*' permission)
-    const roles = await em.find(Role, { id: roleIds as any }, { filter: ['soft-delete'] })
+    const roles = await em.find(Role, { id: roleIds as any, deletedAt: null })
     const isAdmin = roles.some(r => {
       try {
         const perms = JSON.parse(r.permissions)
@@ -54,7 +54,7 @@ export class MenuPermissionService {
     if (isAdmin) return true
 
     // Check menu-specific permissions
-    const menuPerms = await em.find(MenuPermission, { role: roleIds as any }, { filter: ['soft-delete'] })
+    const menuPerms = await em.find(MenuPermission, { role: roleIds as any, deletedAt: null })
     return menuPerms.some(p => p.menuPath === menuPath || menuPath.startsWith(p.menuPath + '/'))
   }
 
@@ -67,7 +67,7 @@ export class MenuPermissionService {
     const em = getOrm().em.fork()
 
     // Admin has all paths
-    const roles = await em.find(Role, { id: roleIds as any }, { filter: ['soft-delete'] })
+    const roles = await em.find(Role, { id: roleIds as any, deletedAt: null })
     const isAdmin = roles.some(r => {
       try {
         const perms = JSON.parse(r.permissions)
@@ -78,7 +78,7 @@ export class MenuPermissionService {
     })
     if (isAdmin) return [] // Empty means all paths
 
-    const menuPerms = await em.find(MenuPermission, { role: roleIds as any }, { filter: ['soft-delete'] })
+    const menuPerms = await em.find(MenuPermission, { role: roleIds as any, deletedAt: null })
     return [...new Set(menuPerms.map(p => p.menuPath))]
   }
 
@@ -108,7 +108,7 @@ export class MenuPermissionService {
    */
   async deleteByRoleAndPath(roleId: string, menuPath: string): Promise<{ success: boolean }> {
     const em = getOrm().em.fork()
-    const perms = await em.find(MenuPermission, { role: roleId as any, menuPath }, { filter: ['soft-delete'] })
+    const perms = await em.find(MenuPermission, { role: roleId as any, menuPath, deletedAt: null })
 
     if (perms.length === 0) {
       return { success: false }
@@ -126,7 +126,7 @@ export class MenuPermissionService {
    */
   async deleteByRoleId(roleId: string): Promise<{ success: boolean }> {
     const em = getOrm().em.fork()
-    const perms = await em.find(MenuPermission, { role: roleId as any }, { filter: ['soft-delete'] })
+    const perms = await em.find(MenuPermission, { role: roleId as any, deletedAt: null })
 
     if (perms.length === 0) {
       return { success: false }

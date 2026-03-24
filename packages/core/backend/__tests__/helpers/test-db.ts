@@ -38,15 +38,23 @@ export async function createTestOrm(): Promise<MikroORM> {
 
   await admin.connect()
 
-  // Terminate all connections to test database (if it exists from a previous run)
-  try {
-    await admin.query(`SELECT pg_terminate_backend(pid)
-      FROM pg_stat_activity
-      WHERE datname = '${testDbName}' AND pid <> pg_backend_pid()`)
-    // Also handle case where database exists from a previous crashed run
-    await admin.query(`DROP DATABASE IF EXISTS ${testDbName}`)
-  } catch (e) {
-    // Ignore errors - database might not exist
+  // Check if database exists
+  const dbExists = await admin.query(
+    `SELECT 1 FROM pg_database WHERE datname = $1`,
+    [testDbName]
+  )
+
+  if (dbExists.rows.length > 0) {
+    // Terminate all connections to test database
+    try {
+      await admin.query(`SELECT pg_terminate_backend(pid)
+        FROM pg_stat_activity
+        WHERE datname = '${testDbName}' AND pid <> pg_backend_pid()`)
+    } catch (e) {
+      // Ignore errors
+    }
+    // Drop database
+    await admin.query(`DROP DATABASE ${testDbName}`)
   }
 
   await admin.query(`CREATE DATABASE ${testDbName}`)
