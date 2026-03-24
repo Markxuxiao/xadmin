@@ -1,5 +1,6 @@
 // XAdmin Vue 插件入口
 import type { App, InjectionKey } from 'vue'
+import { vPermission, vPermissionElse } from './directives/permission'
 
 export interface XAdminPluginOptions {
   modules?: any[]
@@ -19,6 +20,10 @@ export function createXAdmin(options: XAdminPluginOptions = {}) {
     install(app: App) {
       app.provide(viewsMapKey, views)
       app.provide(activeModulesKey, options.modules ?? [])
+
+      // Register global directives
+      app.directive('permission', vPermission)
+      app.directive('permission-else', vPermissionElse)
     }
   }
 }

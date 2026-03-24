@@ -35,6 +35,8 @@ export function rowToUser(row: UserRow) {
 
 // ============================================================================
 // MikroORM Entity (replaces raw SQL in Phase 2)
+// Note: esbuild does not support emitDecoratorMetadata, so all property types
+// must be specified explicitly in the decorator options.
 // ============================================================================
 
 /**
@@ -45,39 +47,39 @@ export function rowToUser(row: UserRow) {
 @Filter({ name: 'soft-delete', cond: { deletedAt: null } })
 @Entity()
 export class User {
-  @PrimaryKey()
+  @PrimaryKey({ type: 'uuid' })
   id!: string
 
-  @Property()
+  @Property({ type: 'string' })
   username!: string
 
-  @Property()
+  @Property({ type: 'string' })
   password!: string
 
-  @Property()
+  @Property({ type: 'string' })
   nickname!: string
 
-  @Property({ nullable: true })
+  @Property({ type: 'string', nullable: true })
   avatar!: string | null
 
-  @Property()
+  @Property({ type: 'string' })
   roles!: string
 
-  @Property()
+  @Property({ type: 'string' })
   permissions!: string
 
-  @Property()
+  @Property({ type: 'boolean' })
   enabled!: boolean
 
-  @Property({ field: 'created_at', defaultRaw: 'NOW()' })
+  @Property({ type: 'Date', fieldName: 'created_at', defaultRaw: 'NOW()' })
   createdAt!: Date
 
-  @Property({ field: 'updated_at', defaultRaw: 'NOW()' })
+  @Property({ type: 'Date', fieldName: 'updated_at', defaultRaw: 'NOW()' })
   updatedAt!: Date
 
-  @Property({ field: 'deleted_at', nullable: true })
+  @Property({ type: 'Date', fieldName: 'deleted_at', nullable: true })
   deletedAt!: Date | null
 
-  @Property({ field: 'version', default: 1 })
+  @Property({ type: 'number', fieldName: 'version', default: 1 })
   version!: number
 }

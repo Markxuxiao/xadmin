@@ -1,4 +1,5 @@
 import { Controller, Post, Body, UnauthorizedException } from '@nestjs/common'
+import { ApiTags, ApiOperation } from '@nestjs/swagger'
 import { AuthService } from './auth.service'
 
 class LoginDto {
@@ -6,11 +7,13 @@ class LoginDto {
   password!: string
 }
 
+@ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('login')
+  @ApiOperation({ summary: '用户登录' })
   async login(@Body() dto: LoginDto) {
     const user = await this.authService.validateUser(dto.username, dto.password)
     if (!user) {

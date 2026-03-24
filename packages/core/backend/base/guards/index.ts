@@ -1,2 +1,6 @@
 export * from './roles.guard'
 export * from './roles.decorator'
+export * from './data-scope.decorator'
+export * from './data-permission.guard'
+export * from './data-permission.service'
+export * from './data-permission.module'

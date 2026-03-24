@@ -13,6 +13,10 @@ import Framework from '@xadmin/frontend/views/Framework.vue'
 import Dashboard from '@xadmin/frontend/views/Dashboard.vue'
 import NotFound from '@xadmin/frontend/views/404.vue'
 import Forbidden from '@xadmin/frontend/views/403.vue'
+import Dict from '@xadmin/frontend/views/Dict.vue'
+import AuditLog from '@xadmin/frontend/views/AuditLog.vue'
+import File from '@xadmin/frontend/views/File.vue'
+import Department from '@xadmin/frontend/views/Department.vue'
 import UserList from '@xadmin/module-user/views/UserList.vue'
 import RoleList from '@xadmin/module-user/views/RoleList.vue'
 
@@ -26,6 +30,10 @@ const routes = [
       { path: '/dashboard', name: 'dashboard', component: Dashboard },
       { path: '/system/user', name: 'system-user', component: UserList },
       { path: '/system/role', name: 'system-role', component: RoleList },
+      { path: '/system/dict', name: 'system-dict', component: Dict },
+      { path: '/system/audit-log', name: 'system-audit-log', component: AuditLog },
+      { path: '/system/file', name: 'system-file', component: File },
+      { path: '/system/department', name: 'system-department', component: Department },
       { path: '/:pathMatch(.*)*', name: '404', component: NotFound }
     ]
   }

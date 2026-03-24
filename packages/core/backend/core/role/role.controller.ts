@@ -1,23 +1,32 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards } from '@nestjs/common'
+import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, Req } from '@nestjs/common'
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger'
 import { RoleService } from './role.service'
 import { AuthGuard } from '../user/auth.guard'
 import { RolesGuard } from '../../base/guards/roles.guard'
 import { Roles } from '../../base/guards/roles.decorator'
+import { DataPermissionGuard } from '../../base/guards/data-permission.guard'
+import { DataScope } from '../../base/guards/data-scope.decorator'
 
+@ApiTags('role')
+@ApiBearerAuth('JWT-auth')
 @Controller('role')
 @UseGuards(AuthGuard)
 export class RoleController {
   constructor(private readonly roleService: RoleService) {}
 
   @Get()
-  async findAll() {
-    const roles = this.roleService.findAll()
+  @UseGuards(DataPermissionGuard)
+  @DataScope({ resourceType: 'role', checkFullAccess: false })
+  @ApiOperation({ summary: '获取角色列表' })
+  async findAll(@Req() req: any) {
+    const roles = await this.roleService.findAll(req.dataScopeFilter)
     return { success: true, data: roles }
   }
 
   @Get(':id')
+  @ApiOperation({ summary: '获取单个角色' })
   async findOne(@Param('id') id: string) {
-    const role = this.roleService.findOne(id)
+    const role = await this.roleService.findOne(id)
     if (!role) {
       return { success: false, message: '角色不存在' }
     }
@@ -27,9 +36,10 @@ export class RoleController {
   @Post()
   @UseGuards(RolesGuard)
   @Roles('admin')
+  @ApiOperation({ summary: '创建角色' })
   async create(@Body() data: any) {
     // Check if code already exists
-    const existing = this.roleService.findByCode(data.code)
+    const existing = await this.roleService.findByCode(data.code)
     if (existing) {
       return { success: false, message: '角色代码已存在' }
     }
@@ -37,8 +47,8 @@ export class RoleController {
       const role = await this.roleService.create(data)
       return { success: true, data: role }
     } catch (err: any) {
-      // Handle UNIQUE constraint violation from concurrent requests
-      if (err.message?.includes('UNIQUE') || err.code === 'SQLITE_CONSTRAINT') {
+      // Handle UNIQUE constraint violation from PostgreSQL
+      if (err.message?.includes('unique') || err.code === '23505') {
         return { success: false, message: '角色代码已存在' }
       }
       throw err
@@ -48,10 +58,11 @@ export class RoleController {
   @Put(':id')
   @UseGuards(RolesGuard)
   @Roles('admin')
+  @ApiOperation({ summary: '更新角色' })
   async update(@Param('id') id: string, @Body() data: any) {
     // Check if code conflicts with another role
     if (data.code) {
-      const existing = this.roleService.findByCode(data.code)
+      const existing = await this.roleService.findByCode(data.code)
       if (existing && existing.id !== id) {
         return { success: false, message: '角色代码已存在' }
       }
@@ -66,8 +77,9 @@ export class RoleController {
   @Delete(':id')
   @UseGuards(RolesGuard)
   @Roles('admin')
+  @ApiOperation({ summary: '删除角色' })
   async delete(@Param('id') id: string) {
-    const result = this.roleService.delete(id)
+    const result = await this.roleService.delete(id)
     return result
   }
 }

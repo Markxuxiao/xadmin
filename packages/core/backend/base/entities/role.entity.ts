@@ -32,6 +32,8 @@ export function rowToRole(row: RoleRow) {
 
 // ============================================================================
 // MikroORM Entity (replaces raw SQL in Phase 2)
+// Note: esbuild does not support emitDecoratorMetadata, so all property types
+// must be specified explicitly in the decorator options.
 // ============================================================================
 
 /**
@@ -40,34 +42,34 @@ export function rowToRole(row: RoleRow) {
 @Filter({ name: 'soft-delete', cond: { deletedAt: null } })
 @Entity()
 export class Role {
-  @PrimaryKey()
+  @PrimaryKey({ type: 'uuid' })
   id!: string
 
-  @Property()
+  @Property({ type: 'string' })
   name!: string
 
   @Unique()
-  @Property()
+  @Property({ type: 'string' })
   code!: string
 
-  @Property({ nullable: true })
+  @Property({ type: 'string', nullable: true })
   description!: string | null
 
-  @Property()
+  @Property({ type: 'string' })
   permissions!: string
 
-  @Property()
+  @Property({ type: 'boolean' })
   enabled!: boolean
 
-  @Property({ field: 'created_at', defaultRaw: 'NOW()' })
+  @Property({ type: 'Date', fieldName: 'created_at', defaultRaw: 'NOW()' })
   createdAt!: Date
 
-  @Property({ field: 'updated_at', defaultRaw: 'NOW()', onUpdate: () => 'NOW()' })
+  @Property({ type: 'Date', fieldName: 'updated_at', defaultRaw: 'NOW()', onUpdate: () => 'NOW()' })
   updatedAt!: Date
 
-  @Property({ field: 'deleted_at', nullable: true })
+  @Property({ type: 'Date', fieldName: 'deleted_at', nullable: true })
   deletedAt!: Date | null
 
-  @Property({ field: 'version', default: 1 })
+  @Property({ type: 'number', fieldName: 'version', default: 1 })
   version!: number
 }

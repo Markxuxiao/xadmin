@@ -51,9 +51,7 @@
         </div>
 
         <div class="header__right">
-          <el-icon class="header-icon" title="通知">
-            <Bell />
-          </el-icon>
+          <NotificationComponent />
 
           <el-dropdown @command="handleUserCommand">
             <div class="user-avatar">
@@ -162,6 +160,7 @@ import { ElMessageBox } from 'element-plus'
 import { useUserStore } from '../runtime/stores/user'
 import { useMenuStore } from '../runtime/stores/menu'
 import { useRouterStore } from '../runtime/stores/router'
+import NotificationComponent from '../components/Notification/index.vue'
 
 const router = useRouter()
 const route = useRoute()

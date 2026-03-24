@@ -3,7 +3,14 @@ import { PostgreSqlDriver } from '@mikro-orm/postgresql'
 import { Client } from 'pg'
 import { User } from '../../base/entities/user.entity'
 import { Role } from '../../base/entities/role.entity'
-import { setTestOrm } from '../../base/database'
+import { Dict } from '../../base/entities/dict.entity'
+import { DataPermission } from '../../base/entities/data-permission.entity'
+import { MenuPermission } from '../../base/entities/menu-permission.entity'
+import { Notification } from '../../base/entities/notification.entity'
+import { ScheduledTask } from '../../base/entities/scheduled-task.entity'
+import { AuditLog } from '../../base/entities/audit-log.entity'
+import { setTestOrm, getOrm } from '../../base/database'
+export { getOrm }
 
 let _orm: MikroORM | null = null
 
@@ -36,7 +43,7 @@ export async function createTestOrm(): Promise<MikroORM> {
     await admin.query(`SELECT pg_terminate_backend(pid)
       FROM pg_stat_activity
       WHERE datname = '${testDbName}' AND pid <> pg_backend_pid()`)
-    // Also handle case where database exists from a crashed previous run
+    // Also handle case where database exists from a previous crashed run
     await admin.query(`DROP DATABASE IF EXISTS ${testDbName}`)
   } catch (e) {
     // Ignore errors - database might not exist
@@ -47,7 +54,7 @@ export async function createTestOrm(): Promise<MikroORM> {
   await admin.end()
 
   _orm = await MikroORM.init({
-    entities: [User, Role],
+    entities: [User, Role, Dict, DataPermission, MenuPermission, Notification, ScheduledTask, AuditLog],
     driver: PostgreSqlDriver,
     host: process.env.PG_HOST ?? 'localhost',
     port: parseInt(process.env.PG_PORT ?? '5432', 10),
@@ -123,6 +130,45 @@ async function seedTestData(em: any) {
   })
 
   await em.persistAndFlush(adminUser)
+
+  // Default scheduled tasks (built-in)
+  const cleanOldAuditLogsTask = em.create(ScheduledTask, {
+    id: 'c0000000-0000-0000-0000-000000000001',
+    name: '清理7天前操作日志',
+    description: '自动清理7天前的操作日志记录',
+    cron: '0 2 * * *',
+    handler: 'clean-old-audit-logs',
+    enabled: true,
+    isBuiltin: true,
+    taskParams: JSON.stringify({ days: 7 }),
+    lastExecutedAt: null,
+    lastExecutedResult: null,
+    consecutiveFailures: 0,
+    createdAt: now,
+    updatedAt: now,
+    deletedAt: null,
+    version: 1,
+  })
+
+  const countDailyUserActivityTask = em.create(ScheduledTask, {
+    id: 'c0000000-0000-0000-0000-000000000002',
+    name: '统计每日用户活跃',
+    description: '统计每日用户活跃数据并生成报表',
+    cron: '0 0 * * *',
+    handler: 'count-daily-user-activity',
+    enabled: false,
+    isBuiltin: true,
+    taskParams: null,
+    lastExecutedAt: null,
+    lastExecutedResult: null,
+    consecutiveFailures: 0,
+    createdAt: now,
+    updatedAt: now,
+    deletedAt: null,
+    version: 1,
+  })
+
+  await em.persistAndFlush([cleanOldAuditLogsTask, countDailyUserActivityTask])
 }
 
 /**
