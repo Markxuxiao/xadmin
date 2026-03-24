@@ -7,60 +7,60 @@ import { Entity, Filter, PrimaryKey, Property } from '@mikro-orm/core'
 @Filter({ name: 'soft-delete', cond: { deletedAt: null } })
 @Entity()
 export class FileRecord {
-  @PrimaryKey()
+  @PrimaryKey({ type: 'string' })
   id!: string
 
   /** 文件原始名称 */
-  @Property()
+  @Property({ type: 'string' })
   originalName!: string
 
   /** 存储文件名 (UUID + 扩展名) */
-  @Property()
+  @Property({ type: 'string' })
   storedName!: string
 
   /** 文件扩展名 */
-  @Property()
+  @Property({ type: 'string' })
   extension!: string
 
   /** 文件 MIME 类型 */
-  @Property()
+  @Property({ type: 'string' })
   mimeType!: string
 
   /** 文件大小 (字节) */
-  @Property()
+  @Property({ type: 'number' })
   size!: number
 
   /** 存储路径 */
-  @Property()
+  @Property({ type: 'string' })
   path!: string
 
   /** 文件分类: avatar | attachment | image | document */
-  @Property()
+  @Property({ type: 'string' })
   category!: string
 
   /** 上传者 ID */
-  @Property()
+  @Property({ type: 'string' })
   uploaderId!: string
 
   /** 上传者用户名 */
-  @Property()
+  @Property({ type: 'string' })
   uploaderName!: string
 
   /** 引用次数 (用于判断是否可删除) */
-  @Property({ default: 0 })
+  @Property({ type: 'number', default: 0 })
   refCount!: number
 
   /** 描述 */
-  @Property({ nullable: true })
+  @Property({ type: 'string', nullable: true })
   description!: string | null
 
-  @Property({ fieldName: 'created_at', defaultRaw: 'NOW()' })
+  @Property({ type: 'Date', fieldName: 'created_at', defaultRaw: 'NOW()' })
   createdAt!: Date
 
-  @Property({ fieldName: 'updated_at', defaultRaw: 'NOW()', onUpdate: () => 'NOW()' })
+  @Property({ type: 'Date', fieldName: 'updated_at', defaultRaw: 'NOW()', onUpdate: () => 'NOW()' })
   updatedAt!: Date
 
-  @Property({ fieldName: 'deleted_at', nullable: true })
+  @Property({ type: 'Date', fieldName: 'deleted_at', nullable: true })
   deletedAt!: Date | null
 }
 

@@ -9,18 +9,18 @@ import { PrimaryKey, Property } from '@mikro-orm/core'
  * entities inherit via TypeScript class inheritance.
  */
 export abstract class BaseEntity {
-  @PrimaryKey()
+  @PrimaryKey({ type: 'uuid' })
   id!: string
 
-  @Property()
+  @Property({ type: 'Date' })
   createdAt!: Date
 
-  @Property({ onUpdate: () => new Date() })
+  @Property({ type: 'Date', onUpdate: () => new Date() })
   updatedAt!: Date
 
-  @Property({ nullable: true })
+  @Property({ type: 'Date', nullable: true })
   deletedAt!: Date | null
 
-  @Property()
+  @Property({ type: 'number' })
   version!: number
 }

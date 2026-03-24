@@ -7,48 +7,48 @@ import { Entity, Filter, PrimaryKey, Property, ManyToOne, OneToMany } from '@mik
 @Filter({ name: 'soft-delete', cond: { deletedAt: null } })
 @Entity()
 export class Department {
-  @PrimaryKey()
+  @PrimaryKey({ type: 'uuid' })
   id!: string
 
   /** 部门名称 */
-  @Property()
+  @Property({ type: 'string' })
   name!: string
 
   /** 部门编码 */
-  @Property()
+  @Property({ type: 'string' })
   code!: string
 
   /** 父部门 ID */
-  @Property({ nullable: true })
+  @Property({ type: 'string', nullable: true })
   parentId!: string | null
 
   /** 排序号 */
-  @Property()
+  @Property({ type: 'number' })
   sort!: number
 
   /** 负责人 */
-  @Property({ nullable: true })
+  @Property({ type: 'string', nullable: true })
   leader!: string | null
 
   /** 联系电话 */
-  @Property({ nullable: true })
+  @Property({ type: 'string', nullable: true })
   phone!: string | null
 
   /** 邮箱 */
-  @Property({ nullable: true })
+  @Property({ type: 'string', nullable: true })
   email!: string | null
 
   /** 部门状态 */
-  @Property()
+  @Property({ type: 'boolean' })
   enabled!: boolean
 
-  @Property({ fieldName: 'created_at', defaultRaw: 'NOW()' })
+  @Property({ fieldName: 'created_at', type: 'date' })
   createdAt!: Date
 
-  @Property({ fieldName: 'updated_at', defaultRaw: 'NOW()', onUpdate: () => 'NOW()' })
+  @Property({ fieldName: 'updated_at', type: 'date', onUpdate: () => 'NOW()' })
   updatedAt!: Date
 
-  @Property({ fieldName: 'deleted_at', nullable: true })
+  @Property({ fieldName: 'deleted_at', type: 'date', nullable: true })
   deletedAt!: Date | null
 }
 
