@@ -26,8 +26,8 @@ export interface NotificationRow {
   senderName: string | null
   link: string | null
   extra: string | null
-  created_at: string
-  updated_at: string
+  createdAt: string
+  updatedAt: string
 }
 
 @Injectable()
@@ -201,8 +201,8 @@ export class NotificationService {
       senderName: n.senderName,
       link: n.link,
       extra: n.extra,
-      created_at: n.createdAt instanceof Date ? n.createdAt.toISOString() : String(n.createdAt),
-      updated_at: n.updatedAt instanceof Date ? n.updatedAt.toISOString() : String(n.updatedAt),
+      createdAt: n.createdAt instanceof Date ? n.createdAt.toISOString() : String(n.createdAt),
+      updatedAt: n.updatedAt instanceof Date ? n.updatedAt.toISOString() : String(n.updatedAt),
     }
   }
 }

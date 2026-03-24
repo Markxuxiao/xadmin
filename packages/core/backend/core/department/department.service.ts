@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common'
 import * as crypto from 'crypto'
 import { getOrm, Department, DepartmentRow, DepartmentTreeNode, buildTree } from '../../base'
 
@@ -72,14 +72,14 @@ export class DepartmentService {
     // 检查编码唯一性
     const existing = await em.findOne(Department, { code: data.code })
     if (existing) {
-      throw new Error('部门编码已存在')
+      throw new BadRequestException('部门编码已存在')
     }
 
     // 验证父部门存在
     if (data.parentId) {
       const parent = await em.findOne(Department, { id: data.parentId })
       if (!parent) {
-        throw new Error('父部门不存在')
+        throw new NotFoundException('父部门不存在')
       }
     }
 
@@ -123,18 +123,18 @@ export class DepartmentService {
     if (data.code && data.code !== dept.code) {
       const existing = await em.findOne(Department, { code: data.code })
       if (existing) {
-        throw new Error('部门编码已存在')
+        throw new BadRequestException('部门编码已存在')
       }
     }
 
     // 检查循环引用：如果设置 parentId，不能是自己的后代
     if (data.parentId !== undefined && data.parentId !== null) {
       if (data.parentId === id) {
-        throw new Error('不能将自己设为父部门')
+        throw new BadRequestException('不能将自己设为父部门')
       }
       const isDescendant = await this.isDescendant(id, data.parentId)
       if (isDescendant) {
-        throw new Error('不能将父部门设为自己的下级')
+        throw new BadRequestException('不能将父部门设为自己的下级')
       }
     }
 
@@ -162,7 +162,7 @@ export class DepartmentService {
     // 检查是否有子部门
     const children = await em.find(Department, { parentId: id }, { filter: ['soft-delete'] })
     if (children.length > 0) {
-      throw new Error('请先删除子部门')
+      throw new BadRequestException('请先删除子部门')
     }
 
     const dept = await em.findOne(Department, { id })

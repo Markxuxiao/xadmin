@@ -111,8 +111,8 @@ export class UserService {
       roles: user.roles,
       permissions: user.permissions,
       enabled: user.enabled ? 1 : 0,
-      created_at: user.createdAt instanceof Date ? user.createdAt.toISOString() : String(user.createdAt),
-      updated_at: user.updatedAt instanceof Date ? user.updatedAt.toISOString() : String(user.updatedAt),
+      createdAt: user.createdAt instanceof Date ? user.createdAt.toISOString() : String(user.createdAt),
+      updatedAt: user.updatedAt instanceof Date ? user.updatedAt.toISOString() : String(user.updatedAt),
       created_by: null,
       updated_by: null,
     }

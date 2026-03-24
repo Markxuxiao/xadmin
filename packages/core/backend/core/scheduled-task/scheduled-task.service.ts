@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, BadRequestException } from '@nestjs/common'
 import * as crypto from 'crypto'
 import { getOrm } from '../../base/database'
 import { ScheduledTask, ScheduledTaskRow } from '../../base/entities/scheduled-task.entity'
@@ -112,7 +112,7 @@ export class ScheduledTaskService {
     // 内置任务不允许修改某些字段
     if (task.isBuiltin) {
       if (data.cron !== undefined || data.handler !== undefined) {
-        throw new Error('Builtin task cron and handler cannot be modified')
+        throw new BadRequestException('Builtin task cron and handler cannot be modified')
       }
     }
 
@@ -148,7 +148,7 @@ export class ScheduledTaskService {
 
     // 内置任务不允许删除
     if (task.isBuiltin) {
-      throw new Error('Builtin task cannot be deleted')
+      throw new BadRequestException('Builtin task cannot be deleted')
     }
 
     // 停止任务调度

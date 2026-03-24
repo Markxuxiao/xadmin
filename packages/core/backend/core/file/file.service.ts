@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, BadRequestException } from '@nestjs/common'
 import * as crypto from 'crypto'
 import * as fs from 'fs'
 import * as path from 'path'
@@ -136,7 +136,7 @@ export class FileService {
 
     // 如果有引用，不能删除
     if (file.refCount > 0) {
-      throw new Error('文件被引用，无法删除')
+      throw new BadRequestException('文件被引用，无法删除')
     }
 
     file.deletedAt = new Date()
