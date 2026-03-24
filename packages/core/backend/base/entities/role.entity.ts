@@ -59,15 +59,15 @@ export class Role {
   @Property()
   enabled!: boolean
 
-  @Property({ field: 'created_at' })
+  @Property({ field: 'created_at', defaultRaw: 'NOW()' })
   createdAt!: Date
 
-  @Property({ field: 'updated_at', onUpdate: () => new Date() })
+  @Property({ field: 'updated_at', defaultRaw: 'NOW()', onUpdate: () => 'NOW()' })
   updatedAt!: Date
 
   @Property({ field: 'deleted_at', nullable: true })
   deletedAt!: Date | null
 
-  @Property({ field: 'version' })
+  @Property({ field: 'version', default: 1 })
   version!: number
 }

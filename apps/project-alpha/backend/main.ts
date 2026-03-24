@@ -1,11 +1,11 @@
 import 'reflect-metadata'
 import { NestFactory } from '@nestjs/core'
 import { AppModule } from './app.module'
-import { getDb } from '../../../packages/core/backend'
+import { initMikroORM } from '../../../packages/core/backend'
 
 async function bootstrap() {
-  // Initialize database (adds version + deletedAt columns, seeds data)
-  getDb()
+  // Initialize MikroORM with PostgreSQL (creates schema + seeds data)
+  await initMikroORM()
 
   const app = await NestFactory.create(AppModule)
   app.enableCors({
