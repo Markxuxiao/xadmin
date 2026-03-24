@@ -112,7 +112,7 @@ export class NotificationService {
     const offset = (page - 1) * pageSize
 
     const [notifications, total] = await em.findAndCount(Notification, where, {
-      filter: ['soft-delete'],
+      filters: ['soft-delete'],
       orderBy: { createdAt: 'DESC' },
       limit: pageSize,
       offset,

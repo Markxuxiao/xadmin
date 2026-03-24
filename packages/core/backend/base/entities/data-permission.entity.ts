@@ -64,13 +64,13 @@ export class DataPermission {
   @Property({ type: 'boolean', default: true })
   allow!: boolean
 
-  @Property({ type: 'Date', field: 'created_at', defaultRaw: 'NOW()' })
+  @Property({ type: 'Date', fieldName: 'created_at', defaultRaw: 'NOW()' })
   createdAt!: Date
 
-  @Property({ type: 'Date', field: 'updated_at', defaultRaw: 'NOW()', onUpdate: () => 'NOW()' })
+  @Property({ type: 'Date', fieldName: 'updated_at', defaultRaw: 'NOW()', onUpdate: () => 'NOW()' })
   updatedAt!: Date
 
-  @Property({ type: 'Date', field: 'deleted_at', nullable: true })
+  @Property({ type: 'Date', fieldName: 'deleted_at', nullable: true })
   deletedAt!: Date | null
 }
 
@@ -95,7 +95,7 @@ export interface DataPermissionRow {
  * Parsed filter value based on operator
  */
 export interface ParsedFilterValue {
-  field: string
+  fieldName: string
   operator: FilterOperator
   value: any
 }

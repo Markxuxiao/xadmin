@@ -10,7 +10,7 @@ export class DepartmentService {
   async findAll() {
     const em = getOrm().em.fork()
     const depts = await em.find(Department, {}, {
-      filter: ['soft-delete'],
+      filters: ['soft-delete'],
       orderBy: { sort: 'ASC' },
     })
     return depts.map(d => this.deptToRow(d))
@@ -48,7 +48,7 @@ export class DepartmentService {
   async findByParentId(parentId: string) {
     const em = getOrm().em.fork()
     const depts = await em.find(Department, { parentId }, {
-      filter: ['soft-delete'],
+      filters: ['soft-delete'],
       orderBy: { sort: 'ASC' },
     })
     return depts.map(d => this.deptToRow(d))
@@ -160,7 +160,7 @@ export class DepartmentService {
     const em = getOrm().em.fork()
 
     // 检查是否有子部门
-    const children = await em.find(Department, { parentId: id }, { filter: ['soft-delete'] })
+    const children = await em.find(Department, { parentId: id }, { filters: ['soft-delete'] })
     if (children.length > 0) {
       throw new BadRequestException('请先删除子部门')
     }

@@ -4,14 +4,15 @@ import { UserService } from '../core/user/user.service'
 
 describe('AuthGuard', () => {
   let authGuard: AuthGuard
-  let mockUserService: ReturnType<typeof vi.fn>
+  let mockUserService: any
 
   beforeEach(() => {
     vi.clearAllMocks()
-    mockUserService = vi.fn(() => ({
+    const mock = {
       verifyToken: vi.fn(),
       getCurrentUser: vi.fn(),
-    }))()
+    }
+    mockUserService = mock as any
     authGuard = new AuthGuard(mockUserService as any)
   })
 

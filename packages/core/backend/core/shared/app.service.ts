@@ -64,7 +64,7 @@ export class AppService {
     const em = getOrm().em.fork()
 
     // Check if user is admin
-    const roles = await em.find(Role, { id: roleIds as any }, { filter: ['soft-delete'] })
+    const roles = await em.find(Role, { id: roleIds as any }, { filters: ['soft-delete'] })
     const isAdmin = roles.some(r => {
       try {
         const perms = JSON.parse(r.permissions)

@@ -84,7 +84,7 @@ export class FileService {
     const offset = (page - 1) * pageSize
 
     const [files, total] = await em.findAndCount(FileRecord, where, {
-      filter: ['soft-delete'],
+      filters: ['soft-delete'],
       orderBy: { createdAt: 'DESC' },
       limit: pageSize,
       offset,

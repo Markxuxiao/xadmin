@@ -51,7 +51,7 @@ export class TaskExecutor implements OnModuleInit, OnModuleDestroy {
    */
   async loadEnabledTasks(): Promise<void> {
     const em = getOrm().em.fork()
-    const tasks = await em.find(ScheduledTask, { enabled: true }, { filter: ['soft-delete'] })
+    const tasks = await em.find(ScheduledTask, { enabled: true }, { filters: ['soft-delete'] })
 
     for (const task of tasks) {
       this.startTask(task)

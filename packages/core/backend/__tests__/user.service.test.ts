@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest'
 import { UserService } from '../core/user/user.service'
 import { createTestOrm, closeTestOrm } from './helpers/test-db'
 
@@ -22,17 +22,10 @@ describe('UserService — token/JWT (no DB)', () => {
       const token = userService.generateToken({
         id: '1',
         username: 'admin',
-        password: 'hash',
         nickname: 'Admin',
-        avatar: null,
         roles: '["admin"]',
         permissions: '["*"]',
-        enabled: 1,
-        created_at: '2026-01-01',
-        updated_at: '2026-01-01',
-        created_by: null,
-        updated_by: null,
-      })
+      } as any)
 
       const [h, p] = token.token.split('.')
       const tampered = `${h}.${p}.wrong_signature`

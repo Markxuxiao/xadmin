@@ -50,13 +50,13 @@ export class ScheduledTask {
   @Property({ type: 'text', nullable: true, fieldName: 'task_params' })
   taskParams!: string | null
 
-  @Property({ type: 'Date', field: 'created_at', defaultRaw: 'NOW()' })
+  @Property({ type: 'Date', fieldName: 'created_at', defaultRaw: 'NOW()' })
   createdAt!: Date
 
-  @Property({ type: 'Date', field: 'updated_at', defaultRaw: 'NOW()', onUpdate: () => new Date() })
+  @Property({ type: 'Date', fieldName: 'updated_at', defaultRaw: 'NOW()', onUpdate: () => new Date() })
   updatedAt!: Date
 
-  @Property({ type: 'Date', field: 'deleted_at', nullable: true })
+  @Property({ type: 'Date', fieldName: 'deleted_at', nullable: true })
   deletedAt!: Date | null
 
   @Property({ type: 'number', fieldName: 'version', default: 1 })

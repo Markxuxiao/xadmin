@@ -54,13 +54,13 @@ export class FileRecord {
   @Property({ nullable: true })
   description!: string | null
 
-  @Property({ field: 'created_at', defaultRaw: 'NOW()' })
+  @Property({ fieldName: 'created_at', defaultRaw: 'NOW()' })
   createdAt!: Date
 
-  @Property({ field: 'updated_at', defaultRaw: 'NOW()', onUpdate: () => 'NOW()' })
+  @Property({ fieldName: 'updated_at', defaultRaw: 'NOW()', onUpdate: () => 'NOW()' })
   updatedAt!: Date
 
-  @Property({ field: 'deleted_at', nullable: true })
+  @Property({ fieldName: 'deleted_at', nullable: true })
   deletedAt!: Date | null
 }
 

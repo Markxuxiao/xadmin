@@ -42,13 +42,13 @@ export class Department {
   @Property()
   enabled!: boolean
 
-  @Property({ field: 'created_at', defaultRaw: 'NOW()' })
+  @Property({ fieldName: 'created_at', defaultRaw: 'NOW()' })
   createdAt!: Date
 
-  @Property({ field: 'updated_at', defaultRaw: 'NOW()', onUpdate: () => 'NOW()' })
+  @Property({ fieldName: 'updated_at', defaultRaw: 'NOW()', onUpdate: () => 'NOW()' })
   updatedAt!: Date
 
-  @Property({ field: 'deleted_at', nullable: true })
+  @Property({ fieldName: 'deleted_at', nullable: true })
   deletedAt!: Date | null
 }
 
@@ -65,9 +65,9 @@ export interface DepartmentRow {
   leader: string | null
   phone: string | null
   email: string | null
-  enabled: number
-  created_at: string
-  updated_at: string
+  enabled: boolean
+  createdAt: string
+  updatedAt: string
 }
 
 /**
@@ -88,8 +88,8 @@ export function rowToDepartment(row: DepartmentRow) {
     phone: row.phone,
     email: row.email,
     enabled: Boolean(row.enabled),
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
   }
 }
 

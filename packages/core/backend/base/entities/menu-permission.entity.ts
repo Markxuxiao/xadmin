@@ -7,21 +7,21 @@ import { Role } from './role.entity'
 
 export interface MenuPermissionRow {
   id: string
-  role_id: string
-  menu_path: string
+  roleId: string
+  menuPath: string
   action: string
-  created_at: string
-  updated_at: string
+  createdAt: string
+  updatedAt: string
 }
 
 export function rowToMenuPermission(row: MenuPermissionRow) {
   return {
     id: row.id,
-    roleId: row.role_id,
-    menuPath: row.menu_path,
+    roleId: row.roleId,
+    menuPath: row.menuPath,
     action: row.action,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
   }
 }
 

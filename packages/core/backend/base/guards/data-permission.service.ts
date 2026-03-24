@@ -23,7 +23,7 @@ export class DataPermissionService {
         resourceType,
         deletedAt: null,
       },
-      { filter: ['soft-delete'], orderBy: { priority: 'DESC' } },
+      { filters: ['soft-delete'], orderBy: { priority: 'DESC' } },
     )
 
     return rules
@@ -172,7 +172,7 @@ export class DataPermissionService {
    */
   async findByResourceType(resourceType: string) {
     const em = getOrm().em.fork()
-    const rules = await em.find(DataPermission, { resourceType }, { filter: ['soft-delete'] })
+    const rules = await em.find(DataPermission, { resourceType }, { filters: ['soft-delete'] })
     return rules.map(r => this.ruleToRow(r))
   }
 

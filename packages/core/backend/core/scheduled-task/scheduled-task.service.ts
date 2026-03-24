@@ -28,7 +28,7 @@ export class ScheduledTaskService {
     const offset = (page - 1) * pageSize
 
     const [tasks, total] = await em.findAndCount(ScheduledTask, where, {
-      filter: ['soft-delete'],
+      filters: ['soft-delete'],
       orderBy: { createdAt: 'DESC' },
       limit: pageSize,
       offset,

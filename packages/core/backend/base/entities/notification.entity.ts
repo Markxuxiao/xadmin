@@ -66,16 +66,16 @@ export class Notification {
   @Property({ type: 'text', nullable: true })
   extra!: string | null
 
-  @Property({ type: 'Date', field: 'created_at', defaultRaw: 'NOW()' })
+  @Property({ type: 'Date', fieldName: 'created_at', defaultRaw: 'NOW()' })
   createdAt!: Date
 
-  @Property({ type: 'Date', field: 'updated_at', defaultRaw: 'NOW()', onUpdate: () => 'NOW()' })
+  @Property({ type: 'Date', fieldName: 'updated_at', defaultRaw: 'NOW()', onUpdate: () => 'NOW()' })
   updatedAt!: Date
 
-  @Property({ type: 'Date', field: 'deleted_at', nullable: true })
+  @Property({ type: 'Date', fieldName: 'deleted_at', nullable: true })
   deletedAt!: Date | null
 
-  @Property({ type: 'number', field: 'version', default: 1 })
+  @Property({ type: 'number', fieldName: 'version', default: 1 })
   version!: number
 }
 

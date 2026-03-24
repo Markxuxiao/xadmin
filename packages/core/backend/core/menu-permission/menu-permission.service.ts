@@ -1,15 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import * as crypto from 'crypto'
-import { getOrm, MenuPermission, Role } from '../../base'
-
-export interface MenuPermissionRow {
-  id: string
-  roleId: string
-  menuPath: string
-  action: string
-  createdAt: string
-  updatedAt: string
-}
+import { getOrm, MenuPermission, MenuPermissionRow, Role } from '../../base'
 
 @Injectable()
 export class MenuPermissionService {
