@@ -74,15 +74,13 @@ export class DictService {
     const dict = await em.findOne(Dict, { id })
     if (!dict) return null
 
-    if (data.name !== undefined) dict.name = data.name
-    if (data.code !== undefined) dict.code = data.code
-    if (data.type !== undefined) dict.type = data.type
-    if (data.value !== undefined) dict.value = data.value
-    if (data.items !== undefined) dict.items = JSON.stringify(data.items)
-    if (data.sort !== undefined) dict.sort = data.sort
-    if (data.description !== undefined) dict.description = data.description
-    if (data.enabled !== undefined) dict.enabled = data.enabled
-    dict.updatedAt = new Date()
+    const assignData = Object.fromEntries(
+      Object.entries({
+        ...data,
+        items: data.items !== undefined ? JSON.stringify(data.items) : undefined,
+      }).filter(([, v]) => v !== undefined)
+    )
+    em.assign(dict, assignData)
 
     await em.flush()
     return this.dictToRow(dict)

@@ -146,11 +146,7 @@ export class MenuService {
       throw new Error('Cannot set menu as its own parent')
     }
 
-    Object.assign(menu, {
-      ...data,
-      updatedAt: new Date(),
-    })
-
+    em.assign(menu, Object.fromEntries(Object.entries(data).filter(([, v]) => v !== undefined)))
     await em.flush()
     return menu
   }

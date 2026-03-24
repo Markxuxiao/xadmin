@@ -63,14 +63,16 @@ export class UserService {
     const user = await em.findOne(User, { id })
     if (!user) return null
 
-    if (data.password !== undefined) {
-      user.password = await this.hashPassword(data.password)
-    }
-    if (data.nickname !== undefined) { user.nickname = data.nickname }
-    if (data.roles !== undefined) { user.roles = JSON.stringify(data.roles) }
-    if (data.permissions !== undefined) { user.permissions = JSON.stringify(data.permissions) }
-    if (data.enabled !== undefined) { user.enabled = data.enabled }
-    user.updatedAt = new Date()
+    const passwordHash = data.password !== undefined ? await this.hashPassword(data.password) : undefined
+    const assignData = Object.fromEntries(
+      Object.entries({
+        ...data,
+        password: passwordHash,
+        roles: data.roles !== undefined ? JSON.stringify(data.roles) : undefined,
+        permissions: data.permissions !== undefined ? JSON.stringify(data.permissions) : undefined,
+      }).filter(([, v]) => v !== undefined)
+    )
+    em.assign(user, assignData)
 
     await em.flush()
     return this.userToRow(user)
