@@ -22,6 +22,10 @@ All notable changes to this project will be documented in this file.
 - TypeScript 编译错误全修复 (field→fieldName, filter→filters)
 - NestJS 异常标准化 (Error → BadRequestException/NotFoundException)
 - JSON.parse 错误处理完善
+- 消除 AuthService → UserService 跨模块调用违反 (通过 EM 直接查询 User entity)
+- 移除 RoleModule 中死掉的 UserModule 导入
+- 删除 core/shared/ 含糊职责模块，菜单逻辑迁入 MenuService
+- 移除 task-executor.ts 中未使用的 AuditLogService 死导入
 
 ## [0.1.3] - 2026-03-23
 
