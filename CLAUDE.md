@@ -22,6 +22,24 @@ apps/
 - **后端**: NestJS + MikroORM + PostgreSQL
 - **工程**: pnpm Monorepo + Workspace
 
+## 后端核心模块
+
+```
+packages/core/backend/core/
+  auth/           — JWT 登录/登出/Token 刷新
+  user/           — 用户 CRUD
+  role/           — 角色 CRUD + 权限关联
+  menu/           — 菜单 CRUD + 树形结构
+  dict/           — 字典管理（系统配置）
+  audit-log/      — 操作日志（审计拦截器）
+  file/           — 文件上传/删除
+  department/     — 部门管理（树形结构）
+  menu-permission/— 基于角色的菜单路径权限
+  notification/   — 通知发送/标记已读
+  online-user/    — 在线用户状态
+  scheduled-task/ — Cron 定时任务
+```
+
 ## 核心设计原则
 
 1. **模块隔离**: Module Service 禁止调用其他 Module Service

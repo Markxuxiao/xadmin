@@ -4,39 +4,57 @@
 
 ## Framework
 
-**Vitest** v4 — Vue 3 + TypeScript native test runner.
+**Vitest** v1.6 — Vue 3 + TypeScript native test runner.
 
 ## Run Tests
 
 ```bash
-cd apps/project-alpha
-pnpm test        # run once
-pnpm run test:watch  # watch mode
+# Frontend + app-level tests (happy-dom)
+cd apps/project-alpha && pnpm test
+
+# Backend core tests (node environment)
+cd packages/core/backend && pnpm test
 ```
 
 ## Test Structure
 
 ```
-apps/project-alpha/src/__tests__/
-  ├── smoke.test.ts      # Setup verification
-  └── user.test.ts       # User store & token tests
+packages/core/backend/__tests__/       # Backend core tests
+  ├── helpers/test-db.ts               # Test ORM setup
+  ├── auth-guard.test.ts
+  ├── auth.service.test.ts
+  ├── data-permission.test.ts
+  ├── dict.test.ts
+  ├── menu-permission.test.ts
+  ├── notification.test.ts
+  ├── online-user.test.ts
+  ├── role-entity.test.ts
+  ├── role.service.test.ts
+  ├── row-transform.test.ts
+  ├── scheduled-task.test.ts
+  ├── user-entity.test.ts
+  └── user.service.test.ts
+
+apps/project-alpha/src/__tests__/       # App-level tests
+  ├── smoke.test.ts                     # Setup verification
+  └── user.test.ts                      # User store & token tests
 ```
 
 ## Conventions
 
 - **File naming**: `*.test.ts` or `*.test.vue`
-- **Test location**: `src/__tests__/` directory
 - **Assertion style**: Vitest `expect()` API
-- **Environment**: `happy-dom` (DOM simulation without Chromium)
+- **Environment**: `happy-dom` for frontend, `node` for backend
 - **Globals**: enabled (`describe`, `it`, `expect`, `vi` are global)
 
 ## Test Layers
 
-| Layer | What | Where |
-|-------|------|-------|
-| Unit tests | Pure functions, stores, types | `*.test.ts` |
-| Component tests | Vue components rendering | `*.test.ts` or `*.test.vue` |
-| Integration tests | API flows, auth sequences | `src/__tests__/` |
+| Layer | What | Where | Environment |
+|-------|------|-------|-------------|
+| Backend unit tests | Services, guards, entities | `packages/core/backend/__tests__/` | `node` |
+| Backend integration tests | Full request flows with test DB | `packages/core/backend/__tests__/` | `node` |
+| Frontend unit tests | Pure functions, stores, types | `apps/project-alpha/src/__tests__/` | `happy-dom` |
+| Component tests | Vue components rendering | `apps/project-alpha/src/__tests__/` | `happy-dom` |
 
 ## Coverage Expectations
 
